@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class ParallelFlowExecutorTest {
 
@@ -47,7 +48,7 @@ public class ParallelFlowExecutorTest {
         HelloWorldWork work1 = new HelloWorldWork("work1", WorkStatus.COMPLETED);
         HelloWorldWork work2 = new HelloWorldWork("work2", WorkStatus.FAILED);
         WorkContext workContext = Mockito.mock(WorkContext.class);
-        ParallelFlowExecutor parallelFlowExecutor = new ParallelFlowExecutor(executorService);
+    ParallelFlowExecutor parallelFlowExecutor = new ParallelFlowExecutor(executorService, 1, TimeUnit.SECONDS);
 
         // when
         List<WorkReport> workReports = parallelFlowExecutor.executeInParallel(Arrays.asList(work1, work2), workContext);

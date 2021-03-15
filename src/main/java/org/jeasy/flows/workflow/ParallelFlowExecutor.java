@@ -23,25 +23,24 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.Work;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReport;
+import org.jeasy.flows.work.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 class ParallelFlowExecutor {
 
     private final ExecutorService workExecutor;
+    private final long timeout;
+    private final TimeUnit unit;
 
-    ParallelFlowExecutor(ExecutorService workExecutor) {
+    ParallelFlowExecutor(ExecutorService workExecutor, long timeout, TimeUnit unit) {
         this.workExecutor = workExecutor;
+        this.timeout = timeout;
+        this.unit = unit;
     }
 
     List<WorkReport> executeInParallel(List<Work> workUnits, WorkContext workContext) {
@@ -65,7 +64,13 @@ class ParallelFlowExecutor {
         List<WorkReport> workReports = new ArrayList<>();
         for (Map.Entry<Work, Future<WorkReport>> entry : workToReportFuturesMap.entrySet()) {
             try {
-                workReports.add(entry.getValue().get());
+                WorkReport workReport;
+                try {
+                    workReport = entry.getValue().get(timeout, unit);
+                } catch (TimeoutException e) {
+                    workReport = new DefaultWorkReport(WorkStatus.FAILED, workContext);
+                }
+                workReports.add(workReport);
             } catch (InterruptedException e) {
                 String message = String.format("The parallel flow was interrupted while waiting for the result of work unit '%s'", entry.getKey().getName());
                 throw new RuntimeException(message, e);

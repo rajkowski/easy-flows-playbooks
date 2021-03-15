@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.jeasy.flows.work.DefaultWorkReport;
 import org.jeasy.flows.work.Work;
@@ -85,6 +86,7 @@ public class WorkFlowEngineImplTest {
                 .named("print 'hello' and 'world' in parallel")
                 .execute(work2, work3)
                 .with(executorService)
+                .timeout(1, TimeUnit.SECONDS)
                 .build();
 
         ConditionalFlow conditionalFlow = aNewConditionalFlow()
@@ -126,7 +128,8 @@ public class WorkFlowEngineImplTest {
                                     .named("print 'hello' and 'world' in parallel")
                                     .execute(work2, work3)
                                     .with(executorService)
-                                    .build())
+                                    .timeout(1, TimeUnit.SECONDS)
+                                .build())
                         .when(COMPLETED)
                         .then(work4)
                         .build())
@@ -151,6 +154,7 @@ public class WorkFlowEngineImplTest {
                 .execute(aNewParallelFlow()
                             .execute(work1, work2)
                             .with(executorService)
+                            .timeout(1, TimeUnit.SECONDS)
                             .build())
                 .then(work3)
                 .then(work4)

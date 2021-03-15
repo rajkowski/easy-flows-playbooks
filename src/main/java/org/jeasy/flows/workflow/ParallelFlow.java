@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A parallel flow executes a set of work units in parallel. A {@link ParallelFlow}
@@ -100,18 +101,24 @@ public class ParallelFlow extends AbstractWorkFlow {
              * @param executorService to use to execute work units in parallel
              * @return the builder instance
              */
-            BuildStep with(ExecutorService executorService);
+            TimeoutStep with(ExecutorService executorService);
+        }
+
+        public interface TimeoutStep {
+            BuildStep timeout(long timeout, TimeUnit unit);
         }
 
         public interface BuildStep {
             ParallelFlow build();
         }
 
-        private static class BuildSteps implements NameStep, ExecuteStep, WithStep, BuildStep {
+        private static class BuildSteps implements NameStep, ExecuteStep, WithStep, TimeoutStep, BuildStep {
 
             private String name;
             private final List<Work> works;
             private ExecutorService executorService;
+            private long timeout;
+            private TimeUnit unit;
 
             public BuildSteps() {
                 this.name = UUID.randomUUID().toString();
@@ -129,10 +136,17 @@ public class ParallelFlow extends AbstractWorkFlow {
                 this.works.addAll(Arrays.asList(workUnits));
                 return this;
             }
+
+            @Override
+            public TimeoutStep with(ExecutorService executorService) {
+                this.executorService = executorService;
+                return this;
+            }
             
             @Override
-            public BuildStep with(ExecutorService executorService) {
-                this.executorService = executorService;
+            public BuildStep timeout(long timeout, TimeUnit unit) {
+                this.timeout = timeout;
+                this.unit = unit;
                 return this;
             }
 
@@ -140,7 +154,7 @@ public class ParallelFlow extends AbstractWorkFlow {
             public ParallelFlow build() {
                 return new ParallelFlow(
                         this.name, this.works,
-                        new ParallelFlowExecutor(this.executorService));
+                        new ParallelFlowExecutor(this.executorService, timeout, unit));
             }
         }
 
