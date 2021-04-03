@@ -23,20 +23,16 @@
  */
 package org.jeasy.flows.engine;
 
+import org.jeasy.flows.work.*;
+import org.jeasy.flows.workflow.*;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import org.jeasy.flows.work.DefaultWorkReport;
-import org.jeasy.flows.work.Work;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReport;
-import org.jeasy.flows.work.WorkStatus;
-import org.jeasy.flows.workflow.*;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jeasy.flows.engine.WorkFlowEngineBuilder.aNewWorkFlowEngine;
@@ -70,34 +66,36 @@ public class WorkFlowEngineImplTest {
     @Test
     public void composeWorkFlowFromSeparateFlowsAndExecuteIt() {
 
-        PrintMessageWork work1 = new PrintMessageWork("foo");
-        PrintMessageWork work2 = new PrintMessageWork("hello");
-        PrintMessageWork work3 = new PrintMessageWork("world");
-        PrintMessageWork work4 = new PrintMessageWork("done");
+        PrintMessageWork work = new PrintMessageWork();
+
+        TaskContext tc1 = new TaskContext(work, "foo");
+        TaskContext tc2 = new TaskContext(work, "hello");
+        TaskContext tc3 = new TaskContext(work, "world");
+        TaskContext tc4 = new TaskContext(work, "done");
 
         RepeatFlow repeatFlow = aNewRepeatFlow()
                 .named("print foo 3 times")
-                .repeat(work1)
+                .repeat(tc1)
                 .times(3)
                 .build();
 
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         ParallelFlow parallelFlow = aNewParallelFlow()
                 .named("print 'hello' and 'world' in parallel")
-                .execute(work2, work3)
+                .execute(tc2, tc3)
                 .with(executorService)
                 .timeout(1, TimeUnit.SECONDS)
                 .build();
 
         ConditionalFlow conditionalFlow = aNewConditionalFlow()
-                .execute(parallelFlow)
+                .execute(new TaskContext(parallelFlow))
                 .when(COMPLETED)
-                .then(work4)
+                .then(tc4)
                 .build();
 
         SequentialFlow sequentialFlow = aNewSequentialFlow()
-                .execute(repeatFlow)
-                .then(conditionalFlow)
+                .execute(new TaskContext(repeatFlow))
+                .then(new TaskContext(conditionalFlow))
                 .build();
 
         WorkFlowEngine workFlowEngine = aNewWorkFlowEngine().build();
@@ -108,31 +106,34 @@ public class WorkFlowEngineImplTest {
         System.out.println("workflow report = " + workReport);
     }
 
+
     @Test
     public void defineWorkFlowInlineAndExecuteIt() {
 
-        PrintMessageWork work1 = new PrintMessageWork("foo");
-        PrintMessageWork work2 = new PrintMessageWork("hello");
-        PrintMessageWork work3 = new PrintMessageWork("world");
-        PrintMessageWork work4 = new PrintMessageWork("done");
+        PrintMessageWork work = new PrintMessageWork();
+
+        TaskContext tc1 = new TaskContext(work, "foo");
+        TaskContext tc2 = new TaskContext(work, "hello");
+        TaskContext tc3 = new TaskContext(work, "world");
+        TaskContext tc4 = new TaskContext(work, "done");
 
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         WorkFlow workflow = aNewSequentialFlow()
-                .execute(aNewRepeatFlow()
+                .execute(new TaskContext(aNewRepeatFlow()
                             .named("print foo 3 times")
-                            .repeat(work1)
+                            .repeat(tc1)
                             .times(3)
-                            .build())
-                .then(aNewConditionalFlow()
-                        .execute(aNewParallelFlow()
+                            .build()))
+                .then(new TaskContext(aNewConditionalFlow()
+                        .execute(new TaskContext(aNewParallelFlow()
                                     .named("print 'hello' and 'world' in parallel")
-                                    .execute(work2, work3)
+                                    .execute(tc2, tc3)
                                     .with(executorService)
                                     .timeout(1, TimeUnit.SECONDS)
-                                .build())
+                                .build()))
                         .when(COMPLETED)
-                        .then(work4)
-                        .build())
+                        .then(tc4)
+                        .build()))
                 .build();
 
         WorkFlowEngine workFlowEngine = aNewWorkFlowEngine().build();
@@ -145,25 +146,30 @@ public class WorkFlowEngineImplTest {
 
     @Test
     public void useWorkContextToPassInitialParametersAndShareDataBetweenWorkUnits() {
-        WordCountWork work1 = new WordCountWork(1);
-        WordCountWork work2 = new WordCountWork(2);
+
+        WordCountWork work = new WordCountWork();
+        TaskContext tc1 = new TaskContext(work, "hello foo hello you");
+        tc1.put("partition", 1);
+        TaskContext tc2 = new TaskContext(work, "hello bar");
+        tc2.put("partition", 2);
+
         AggregateWordCountsWork work3 = new AggregateWordCountsWork();
+
         PrintWordCount work4 = new PrintWordCount();
+
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         WorkFlow workflow = aNewSequentialFlow()
-                .execute(aNewParallelFlow()
-                            .execute(work1, work2)
+                .execute(new TaskContext(aNewParallelFlow()
+                            .execute(tc1, tc2)
                             .with(executorService)
                             .timeout(1, TimeUnit.SECONDS)
-                            .build())
-                .then(work3)
-                .then(work4)
+                            .build()))
+                .then(new TaskContext(work3))
+                .then(new TaskContext(work4))
                 .build();
 
         WorkFlowEngine workFlowEngine = aNewWorkFlowEngine().build();
         WorkContext workContext = new WorkContext();
-        workContext.put("partition1", "hello foo");
-        workContext.put("partition2", "hello bar");
         WorkReport workReport = workFlowEngine.run(workflow, workContext);
         executorService.shutdown();
         assertThat(workReport.getStatus()).isEqualTo(WorkStatus.COMPLETED);
@@ -171,17 +177,20 @@ public class WorkFlowEngineImplTest {
 
     static class PrintMessageWork implements Work {
 
-        private final String message;
+        public static final String MESSAGE_VAR = "totalCount";
 
-        public PrintMessageWork(String message) {
-            this.message = message;
+        public PrintMessageWork() {
         }
 
         public String getName() {
             return "print message work";
         }
 
-        public WorkReport execute(WorkContext workContext) {
+        public WorkReport execute(WorkContext workContext, TaskContext taskContext) {
+            String message = (String) workContext.get(MESSAGE_VAR);
+            if (message == null) {
+                message = taskContext.getData();
+            }
             System.out.println(message);
             return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
         }
@@ -190,10 +199,9 @@ public class WorkFlowEngineImplTest {
     
     static class WordCountWork implements Work {
 
-        private final int partition;
+        public static final String PARTITION_VAR = "partition";
 
-        public WordCountWork(int partition) {
-            this.partition = partition;
+        public WordCountWork() {
         }
 
         @Override
@@ -202,8 +210,9 @@ public class WorkFlowEngineImplTest {
         }
 
         @Override
-        public WorkReport execute(WorkContext workContext) {
-            String input = (String) workContext.get("partition" + partition);
+        public WorkReport execute(WorkContext workContext, TaskContext taskContext) {
+            int partition = (Integer) taskContext.get(PARTITION_VAR);
+            String input = taskContext.getData();
             workContext.put("wordCountInPartition" + partition, input.split(" ").length);
             return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
         }
@@ -217,7 +226,7 @@ public class WorkFlowEngineImplTest {
         }
 
         @Override
-        public WorkReport execute(WorkContext workContext) {
+        public WorkReport execute(WorkContext workContext, TaskContext taskContext) {
             Set<Map.Entry<String, Object>> entrySet = workContext.getEntrySet();
             int sum = 0;
             for (Map.Entry<String, Object> entry : entrySet) {
@@ -238,7 +247,7 @@ public class WorkFlowEngineImplTest {
         }
 
         @Override
-        public WorkReport execute(WorkContext workContext) {
+        public WorkReport execute(WorkContext workContext, TaskContext taskContext) {
             int totalCount = (int) workContext.get("totalCount");
             System.out.println(totalCount);
             return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);

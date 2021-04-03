@@ -9,8 +9,8 @@
     </parent>
 
     <groupId>org.jeasy</groupId>
-    <artifactId>easy-flows</artifactId>
-    <version>0.4-SNAPSHOT</version>
+    <artifactId>easy-flows-playbook</artifactId>
+    <version>0.5-SNAPSHOT</version>
 
     <name>Easy Flows</name>
     <description>The simple, stupid workflow engine for Java</description>
@@ -19,7 +19,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <slf4j.version>1.7.30</slf4j.version>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
         <junit.version>4.13.1</junit.version>
         <assertj.version>3.17.2</assertj.version>
         <mockito.version>3.5.13</mockito.version>
@@ -72,10 +72,14 @@
             <version>${slf4j.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>2.11.3</version>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>${slf4j.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

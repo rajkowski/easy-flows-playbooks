@@ -23,11 +23,7 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.NoOpWork;
-import org.jeasy.flows.work.Work;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReportPredicate;
-import org.jeasy.flows.work.WorkReport;
+import org.jeasy.flows.work.*;
 
 import java.util.UUID;
 
@@ -38,10 +34,10 @@ import java.util.UUID;
  */
 public class RepeatFlow extends AbstractWorkFlow {
 
-    private final Work work;
+    private final TaskContext work;
     private final WorkReportPredicate predicate;
 
-    RepeatFlow(String name, Work work, WorkReportPredicate predicate) {
+    RepeatFlow(String name, TaskContext work, WorkReportPredicate predicate) {
         super(name);
         this.work = work;
         this.predicate = predicate;
@@ -53,7 +49,23 @@ public class RepeatFlow extends AbstractWorkFlow {
     public WorkReport execute(WorkContext workContext) {
         WorkReport workReport;
         do {
-            workReport = work.execute(workContext);
+            workReport = work.execute(workContext, work);
+        } while (predicate.apply(workReport));
+        return workReport;
+    }
+
+    @Override
+    public WorkReport execute(WorkContext workContext, TaskContext taskContext2) {
+        WorkReport workReport;
+        // Determine if there is a 'when' condition that must be satisfied
+        if (work.getWhen() != null) {
+            boolean result = When.validate(workContext, work, work.getWhen());
+            if (!result) {
+                return new DefaultWorkReport(WorkStatus.FAILED, workContext);
+            }
+        }
+        do {
+            workReport = work.execute(workContext, work);
         } while (predicate.apply(workReport));
         return workReport;
     }
@@ -73,12 +85,12 @@ public class RepeatFlow extends AbstractWorkFlow {
         }
 
         public interface RepeatStep {
-            UntilStep repeat(Work work);
+            UntilStep repeat(TaskContext work);
         }
 
         public interface UntilStep {
             BuildStep until(WorkReportPredicate predicate);
-            BuildStep times(int times);
+            BuildStep times(long times);
         }
 
         public interface BuildStep {
@@ -88,12 +100,12 @@ public class RepeatFlow extends AbstractWorkFlow {
         private static class BuildSteps implements NameStep, RepeatStep, UntilStep, BuildStep {
 
             private String name;
-            private Work work;
+            private TaskContext work;
             private WorkReportPredicate predicate;
 
             BuildSteps() {
                 this.name = UUID.randomUUID().toString();
-                this.work = new NoOpWork();
+                this.work = new TaskContext(new NoOpTask());
                 this.predicate = WorkReportPredicate.ALWAYS_FALSE;
             }
             
@@ -104,7 +116,7 @@ public class RepeatFlow extends AbstractWorkFlow {
             }
 
             @Override
-            public UntilStep repeat(Work work) {
+            public UntilStep repeat(TaskContext work) {
                 this.work = work;
                 return this;
             }
@@ -116,7 +128,7 @@ public class RepeatFlow extends AbstractWorkFlow {
             }
 
             @Override
-            public BuildStep times(int times) {
+            public BuildStep times(long times) {
                 until(WorkReportPredicate.TimesPredicate.times(times));
                 return this;
             }

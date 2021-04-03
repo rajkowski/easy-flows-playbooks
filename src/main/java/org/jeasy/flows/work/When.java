@@ -23,24 +23,28 @@
  */
 package org.jeasy.flows.work;
 
-import org.assertj.core.api.Assertions;
-import org.junit.Assert;
-import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class NoOpWorkTest {
+public class When {
 
-	private final NoOpWork work = new NoOpWork();
+  private static final Logger LOGGER = LoggerFactory.getLogger(When.class.getName());
 
-	@Test
-	public void getName() {
-		Assertions.assertThat(work.getName()).isNotNull();
-	}
+  public static boolean validate(WorkContext workContext, TaskContext taskContext, String condition) {
 
-	@Test
-	public void testExecute() {
-		WorkReport workReport = work.execute(new WorkContext());
-		Assert.assertNotNull(workReport);
-		Assertions.assertThat(workReport.getStatus()).isEqualTo(WorkStatus.COMPLETED);
+    // see if this task can be executed...
+    LOGGER.info("When: " + condition);
+    String[] taskField = condition.split("=");
+    String fieldName = taskField[0].trim();
+    String fieldValue = taskField[1].trim();
 
-	}
+    String contextValue = (String) workContext.get(fieldName);
+    LOGGER.info("  Compare: " + fieldValue + " to " + contextValue);
+
+    if (!fieldValue.equals(contextValue)) {
+      return false;
+    }
+
+    return true;
+  }
 }

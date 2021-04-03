@@ -23,22 +23,15 @@
  */
 package org.jeasy.flows.work;
 
-import java.util.UUID;
-
 /**
  * No operation work.
  *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
-public class NoOpWork implements Work {
+public class NoOpTask implements Work {
 
     @Override
-    public String getName() {
-        return UUID.randomUUID().toString();
-    }
-
-    @Override
-    public WorkReport execute(WorkContext workContext) {
+    public WorkReport execute(WorkContext workContext, TaskContext taskContext) {
         return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
     }
 }

@@ -23,15 +23,16 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.Work;
+import org.jeasy.flows.work.TaskContext;
 import org.jeasy.flows.work.WorkContext;
 import org.jeasy.flows.work.WorkReport;
+import org.jeasy.flows.work.When;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.jeasy.flows.work.WorkStatus.FAILED;
 
@@ -46,23 +47,56 @@ public class SequentialFlow extends AbstractWorkFlow {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SequentialFlow.class.getName());
 
-    private final List<Work> workUnits = new ArrayList<>();
+    private final List<TaskContext> taskContexts = new ArrayList<>();
 
-    SequentialFlow(String name, List<Work> workUnits) {
+    SequentialFlow(String name, List<TaskContext> taskContexts) {
         super(name);
-        this.workUnits.addAll(workUnits);
+        this.taskContexts.addAll(taskContexts);
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public WorkReport execute(WorkContext workContext) {
+        return execute(workContext, null);
+    }
+
+    @Override
+    public WorkReport execute(WorkContext workContext, TaskContext taskContext2) {
         WorkReport workReport = null;
-        for (Work work : workUnits) {
-            workReport = work.execute(workContext);
-            if (workReport != null && FAILED.equals(workReport.getStatus())) {
-                LOGGER.info("Work unit ''{}'' has failed, skipping subsequent work units", work.getName());
-                break;
+        for (TaskContext taskContext : taskContexts) {
+            if (taskContext.getWork() == null) {
+                LOGGER.error("Task has no Work object!");
+                continue;
+            }
+            if (taskContext.getWork().getClass() == null) {
+                LOGGER.error("Task has no Work class!");
+                continue;
+            }
+            // Determine if there is a 'when' condition that must be satisfied
+            boolean canExecute = true;
+            if (taskContext.getWhen() != null) {
+                boolean result = When.validate(workContext, taskContext, taskContext.getWhen());
+                if (!result) {
+                    // If within a block, then break;
+                    if ("block".equals(getName())) {
+                        break;
+                    }
+                    // Else skip just this task
+                    canExecute = false;
+                    LOGGER.warn("Skipping " + taskContext.getWork().getClass().getSimpleName() + ", condition not met: " + taskContext.getWhen());
+                }
+            }
+            if (canExecute) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Executing work: " + taskContext.getWork().getClass().getSimpleName());
+                }
+                workReport = taskContext.getWork().execute(workContext, taskContext);
+                if (workReport != null && FAILED.equals(workReport.getStatus()) && !"block".equals(taskContext.getWork().getName())) {
+                    LOGGER.warn("Work unit '{}' has failed, skipping subsequent work units", taskContext.getWork().getName());
+                    break;
+                }
             }
         }
         return workReport;
@@ -83,58 +117,62 @@ public class SequentialFlow extends AbstractWorkFlow {
         }
 
         public interface ExecuteStep {
-            ThenStep execute(Work initialWork);
-            ThenStep execute(List<Work> initialWorkUnits);
+            ThenStep execute(TaskContext taskContext);
+            ThenStep execute(List<TaskContext> initialTaskContexts);
         }
 
         public interface ThenStep {
-            ThenStep then(Work nextWork);
-            ThenStep then(List<Work> nextWorkUnits);
+            ThenStep then(TaskContext nextTaskContext);
+            ThenStep then(List<TaskContext> nextTaskContexts);
             SequentialFlow build();
         }
 
         private static class BuildSteps implements NameStep, ExecuteStep, ThenStep {
 
             private String name;
-            private final List<Work> works;
-            
+            private final List<TaskContext> taskContexts;
+
             BuildSteps() {
                 this.name = UUID.randomUUID().toString();
-                this.works = new ArrayList<>();
+                this.taskContexts = new ArrayList<>();
             }
-            
+
             public ExecuteStep named(String name) {
                 this.name = name;
                 return this;
             }
 
             @Override
-            public ThenStep execute(Work initialWork) {
-                this.works.add(initialWork);
+            public ThenStep execute(TaskContext taskContext) {
+                this.taskContexts.add(taskContext);
                 return this;
             }
 
             @Override
-            public ThenStep execute(List<Work> initialWorkUnits) {
-                this.works.addAll(initialWorkUnits);
+            public ThenStep execute(List<TaskContext> initialTaskContexts) {
+                for (TaskContext taskContext : initialTaskContexts) {
+                    this.taskContexts.add(taskContext);
+                }
                 return this;
             }
 
             @Override
-            public ThenStep then(Work nextWork) {
-                this.works.add(nextWork);
+            public ThenStep then(TaskContext nextTaskContext) {
+                this.taskContexts.add(nextTaskContext);
                 return this;
             }
 
             @Override
-            public ThenStep then(List<Work> nextWorkUnits) {
-                this.works.addAll(nextWorkUnits);
+            public ThenStep then(List<TaskContext> nextTaskContexts) {
+                for (TaskContext taskContext : nextTaskContexts) {
+                    this.taskContexts.add(taskContext);
+                }
                 return this;
             }
 
             @Override
             public SequentialFlow build() {
-                return new SequentialFlow(this.name, this.works);
+                return new SequentialFlow(this.name, this.taskContexts);
             }
         }
     }
