@@ -145,13 +145,13 @@ public class PlaybookManager {
                   .repeat(blockTaskContext)
                   .times(blockTask.getRepeat())
                   .build();
-              blockThenStep = blockBuilder.execute(new TaskContext(repeatFlow));
+              blockThenStep = blockBuilder.execute(repeatFlow);
             } else {
               blockThenStep = blockBuilder.execute(blockTaskContext);
             }
           }
           SequentialFlow blockFlow = blockThenStep.build();
-          thenStep = builder.execute(new TaskContext(blockFlow));
+          thenStep = builder.execute(blockFlow);
         } else if ("parallel".equals(task.getId())) {
           // Construct a parallel workflow and append as a thenStep
           List<TaskContext> parallelTaskContextList = new ArrayList<>();
@@ -168,7 +168,7 @@ public class PlaybookManager {
               .with(executorService)
               .timeout(task.getTimeout(), TimeUnit.SECONDS)
               .build();
-          thenStep = builder.execute(new TaskContext(parallelFlow));
+          thenStep = builder.execute(parallelFlow);
         } else {
           LOGGER.error("Unknown '" + task.getId() + "': This TASK has hanging TASKS!!");
         }
@@ -180,7 +180,7 @@ public class PlaybookManager {
               .repeat(taskContext)
               .times(task.getRepeat())
               .build();
-          thenStep = builder.execute(new TaskContext(repeatFlow));
+          thenStep = builder.execute(repeatFlow);
         } else {
           thenStep = builder.execute(taskContext);
         }

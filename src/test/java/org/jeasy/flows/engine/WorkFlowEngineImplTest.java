@@ -88,14 +88,14 @@ public class WorkFlowEngineImplTest {
                 .build();
 
         ConditionalFlow conditionalFlow = aNewConditionalFlow()
-                .execute(new TaskContext(parallelFlow))
+                .execute(parallelFlow)
                 .when(COMPLETED)
                 .then(tc4)
                 .build();
 
         SequentialFlow sequentialFlow = aNewSequentialFlow()
-                .execute(new TaskContext(repeatFlow))
-                .then(new TaskContext(conditionalFlow))
+                .execute(repeatFlow)
+                .then(conditionalFlow)
                 .build();
 
         WorkFlowEngine workFlowEngine = aNewWorkFlowEngine().build();
@@ -119,21 +119,21 @@ public class WorkFlowEngineImplTest {
 
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         WorkFlow workflow = aNewSequentialFlow()
-                .execute(new TaskContext(aNewRepeatFlow()
+                .execute(aNewRepeatFlow()
                             .named("print foo 3 times")
                             .repeat(tc1)
                             .times(3)
-                            .build()))
-                .then(new TaskContext(aNewConditionalFlow()
-                        .execute(new TaskContext(aNewParallelFlow()
+                            .build())
+                .then(aNewConditionalFlow()
+                        .execute(aNewParallelFlow()
                                     .named("print 'hello' and 'world' in parallel")
                                     .execute(tc2, tc3)
                                     .with(executorService)
                                     .timeout(1, TimeUnit.SECONDS)
-                                .build()))
+                                .build())
                         .when(COMPLETED)
                         .then(tc4)
-                        .build()))
+                        .build())
                 .build();
 
         WorkFlowEngine workFlowEngine = aNewWorkFlowEngine().build();
@@ -159,13 +159,13 @@ public class WorkFlowEngineImplTest {
 
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         WorkFlow workflow = aNewSequentialFlow()
-                .execute(new TaskContext(aNewParallelFlow()
+                .execute(aNewParallelFlow()
                             .execute(tc1, tc2)
                             .with(executorService)
                             .timeout(1, TimeUnit.SECONDS)
-                            .build()))
-                .then(new TaskContext(work3))
-                .then(new TaskContext(work4))
+                            .build())
+                .then(work3)
+                .then(work4)
                 .build();
 
         WorkFlowEngine workFlowEngine = aNewWorkFlowEngine().build();

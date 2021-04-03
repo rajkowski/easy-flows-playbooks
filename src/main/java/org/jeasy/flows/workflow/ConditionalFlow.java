@@ -98,6 +98,7 @@ public class ConditionalFlow extends AbstractWorkFlow {
 
         public interface ExecuteStep {
             WhenStep execute(TaskContext initialWorkUnit);
+            WhenStep execute(Work initialWorkUnit);
         }
 
         public interface WhenStep {
@@ -139,6 +140,12 @@ public class ConditionalFlow extends AbstractWorkFlow {
             @Override
             public WhenStep execute(TaskContext initialWorkUnit) {
                 this.initialWorkUnit = initialWorkUnit;
+                return this;
+            }
+
+            @Override
+            public WhenStep execute(Work initialWorkUnit) {
+                this.initialWorkUnit = new TaskContext(initialWorkUnit);
                 return this;
             }
 

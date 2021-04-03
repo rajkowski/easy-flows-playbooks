@@ -23,10 +23,7 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.TaskContext;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReport;
-import org.jeasy.flows.work.When;
+import org.jeasy.flows.work.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,11 +115,13 @@ public class SequentialFlow extends AbstractWorkFlow {
 
         public interface ExecuteStep {
             ThenStep execute(TaskContext taskContext);
+            ThenStep execute(Work work);
             ThenStep execute(List<TaskContext> initialTaskContexts);
         }
 
         public interface ThenStep {
             ThenStep then(TaskContext nextTaskContext);
+            ThenStep then(Work work);
             ThenStep then(List<TaskContext> nextTaskContexts);
             SequentialFlow build();
         }
@@ -149,6 +148,12 @@ public class SequentialFlow extends AbstractWorkFlow {
             }
 
             @Override
+            public ThenStep execute(Work work) {
+                this.taskContexts.add(new TaskContext(work));
+                return this;
+            }
+
+            @Override
             public ThenStep execute(List<TaskContext> initialTaskContexts) {
                 for (TaskContext taskContext : initialTaskContexts) {
                     this.taskContexts.add(taskContext);
@@ -159,6 +164,12 @@ public class SequentialFlow extends AbstractWorkFlow {
             @Override
             public ThenStep then(TaskContext nextTaskContext) {
                 this.taskContexts.add(nextTaskContext);
+                return this;
+            }
+
+            @Override
+            public ThenStep then(Work nextTaskContext) {
+                this.taskContexts.add(new TaskContext(nextTaskContext));
                 return this;
             }
 
