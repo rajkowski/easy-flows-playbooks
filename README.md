@@ -1,24 +1,72 @@
 ***
 
 <div align="center">
-    <b><em>Easy Flows</em></b><br>
-    The simple, stupid workflow engine for Java&trade;
-</div>
-
-<div align="center">
-
-[![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](http://opensource.org/licenses/MIT)
-[![Build Status](https://github.com/j-easy/easy-flows/workflows/Java%20CI/badge.svg)](https://github.com/j-easy/easy-flows/actions)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.jeasy/easy-flows/badge.svg?style=flat)](http://search.maven.org/#artifactdetails|org.jeasy|easy-flows|0.3|)
-[![Javadoc](https://www.javadoc.io/badge/org.jeasy/easy-flows.svg)](http://www.javadoc.io/doc/org.jeasy/easy-flows)
-
+    <b><em>Easy Flows - Playbooks Edition</em></b><br>
+    The simple, stupid workflow engine for Java&trade, with Playbooks;
 </div>
 
 ***
 
-## Latest news
+## What is the Playbooks Edition?
 
-* 08/10/2020: Easy Flows 0.3 has been released with a number of new features and improvements. You can find all details in the release notes [here](https://github.com/j-easy/easy-flows/releases).
+In this version you can define the workflows in YAML similar to Ansible, or from other resources. Playbooks contain the rules and configuration for executing tasks. Supply your YAML, and your own map of task ids and classes. Emphasis is on configuration over code. Jackson/YAML is a required dependency.
+
+These are the changes from Easy Flows:
+
+1. The functionality to use YAML to read in workflows has been added
+2. A 'Playbook Manager' assembles and caches workflows, as 'Playbooks' and executes them; once defined you can execute workflows repeatedly by id
+3. 'Task' items are your tasks which perform work; these can be instantiated once by the Playbook Manager, they are considered immutable, and can be re-used during workflows and with other workflows concurrently; Tasks have a unique id for reference
+4. Some additional features as seen in the example workflows...
+
+An example with parallel tasks within a sequence:
+
+```yaml
+id: my-workflow
+name: Does something...
+workflow:
+  - log: foo
+    repeat: 3
+  - parallel:
+    timeout: 5
+    threads: 2
+    tasks:
+      - log: hello
+      - log: there
+      - log: world
+  - set: completed=true
+  - log: ok
+    when: completed=true
+  - log: nok
+    when: completed=false
+```
+
+An example with conditional blocks within a sequence; when a task fails within a block, the block fails but other blocks and tasks outside the block resume:
+
+```yaml
+id: my-block-workflow
+name: Does something...
+workflow:
+  - log: Repeat 3 times
+    repeat: 3
+  - set: condition1 = 1
+  - block:
+    when: condition1 = 1
+    - log: Repeating 2 times
+      repeat: 2
+    - set: block1 = yes
+  - block:
+    when: condition1 = 0
+    - log: This block will not be executed
+    - log: This is not executed
+    - set: block2 = yes
+  - set: finished = yes
+  - log: Finished
+```
+
+This workflow engine is modified from Easy Flows and is considered incompatible (and largely untested).
+For original information, and very good background details, see [Easy Flows](https://github.com/j-easy/easy-flows)...
+
+These are the previous notes:
 
 ## What is Easy Flows?
 

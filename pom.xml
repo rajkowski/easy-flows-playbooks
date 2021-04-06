@@ -13,7 +13,7 @@
     <version>0.5-SNAPSHOT</version>
 
     <name>Easy Flows</name>
-    <description>The simple, stupid workflow engine for Java</description>
+    <description>The simple, stupid workflow engine for Java, with Playbooks</description>
     <url>http://www.github.com/j-easy/easy-flows</url>
 
     <properties>

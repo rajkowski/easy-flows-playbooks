@@ -12,8 +12,8 @@ public class LogTask implements Work {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LogTask.class.getName());
 
-  public static String GLOBAL_MESSAGE_VAR = "log-message";
-  public static String MESSAGE_VAR = "message";
+  public static final String GLOBAL_MESSAGE_VAR = "log-message";
+  public static final String MESSAGE_VAR = "message";
 
   @Override
   public WorkReport execute(WorkContext workContext, TaskContext taskContext) {
