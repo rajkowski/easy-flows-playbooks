@@ -23,51 +23,24 @@
  */
 package org.jeasy.flows.work;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import org.assertj.core.api.Assertions;
+import org.junit.Assert;
+import org.junit.Test;
 
-/**
- * Work execution context. This can be used to pass initial parameters to the
- * workflow and share data between work units.
- *
- * <strong>Work context instances are thread-safe.</strong>
- *
- * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
- */
-public class WorkContext {
+public class NoOpTaskTest {
 
-  private final Map<String, Object> context = new ConcurrentHashMap<>();
+	private final NoOpTask work = new NoOpTask();
 
-  public void put(String key, Object value) {
-    context.put(key, value);
-  }
+	@Test
+	public void getName() {
+		Assertions.assertThat(work.getName()).isNotNull();
+	}
 
-  public void put(Map<String, Object> vars) {
-    if (vars == null || vars.isEmpty()) {
-      return;
-    }
-    for (String var : vars.keySet()) {
-      if (!context.containsKey(var)) {
-        context.put(var, vars.get(var));
-      }
-    }
-  }
+	@Test
+	public void testExecute() {
+		WorkReport workReport = work.execute(new WorkContext(), new TaskContext(work));
+		Assert.assertNotNull(workReport);
+		Assertions.assertThat(workReport.getStatus()).isEqualTo(WorkStatus.COMPLETED);
 
-  public Object get(String key) {
-    return context.get(key);
-  }
-
-  public Set<Map.Entry<String, Object>> getEntrySet() {
-    return context.entrySet();
-  }
-
-  public boolean containsKey(String key) {
-    return context.containsKey(key);
-  }
-
-  @Override
-  public String toString() {
-    return "context=" + context + '}';
-  }
+	}
 }

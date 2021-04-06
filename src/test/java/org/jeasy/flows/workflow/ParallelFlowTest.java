@@ -24,7 +24,7 @@
 package org.jeasy.flows.workflow;
 
 import org.assertj.core.api.Assertions;
-import org.jeasy.flows.work.Work;
+import org.jeasy.flows.work.TaskContext;
 import org.jeasy.flows.work.WorkContext;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -37,11 +37,11 @@ public class ParallelFlowTest {
     @Test
     public void testExecute() {
         // given
-        Work work1 = Mockito.mock(Work.class);
-        Work work2 = Mockito.mock(Work.class);
+        TaskContext work1 = Mockito.mock(TaskContext.class);
+        TaskContext work2 = Mockito.mock(TaskContext.class);
         WorkContext workContext = Mockito.mock(WorkContext.class);
         ParallelFlowExecutor parallelFlowExecutor = Mockito.mock(ParallelFlowExecutor.class);
-        List<Work> works = Arrays.asList(work1, work2);
+        List<TaskContext> works = Arrays.asList(work1, work2);
         ParallelFlow parallelFlow = new ParallelFlow("pf", works, parallelFlowExecutor);
 
         // when

@@ -24,6 +24,8 @@
 package org.jeasy.flows.workflow;
 
 import org.jeasy.flows.work.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,38 +33,43 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
-class ParallelFlowExecutor {
+public class ParallelFlowExecutor {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ParallelFlowExecutor.class.getName());
 
     private final ExecutorService workExecutor;
     private final long timeout;
     private final TimeUnit unit;
 
-    ParallelFlowExecutor(ExecutorService workExecutor, long timeout, TimeUnit unit) {
+    public ParallelFlowExecutor(ExecutorService workExecutor, long timeout, TimeUnit unit) {
         this.workExecutor = workExecutor;
         this.timeout = timeout;
         this.unit = unit;
     }
 
-    List<WorkReport> executeInParallel(List<Work> workUnits, WorkContext workContext) {
-        // prepare tasks for parallel submission
+    public List<WorkReport> executeInParallel(List<TaskContext> workUnits, WorkContext workContext) {
+        // Prepare tasks for parallel submission
+        LOGGER.info("tasks=" + workUnits.size() + "; timeout=" + timeout);
         List<Callable<WorkReport>> tasks = new ArrayList<>(workUnits.size());
-        workUnits.forEach(work -> tasks.add(() -> work.execute(workContext)));
+        workUnits.forEach(work -> tasks.add(() -> work.execute(workContext, work)));
 
-        // submit work units and wait for results
+        // Submit work units and wait for results
+        LOGGER.trace("Submit work units and wait for results");
         List<Future<WorkReport>> futures;
         try {
             futures = this.workExecutor.invokeAll(tasks);
         } catch (InterruptedException e) {
             throw new RuntimeException("The parallel flow was interrupted while executing work units", e);
         }
-        Map<Work, Future<WorkReport>> workToReportFuturesMap = new HashMap<>();
+        LOGGER.debug("executor=" + workExecutor.toString());
+        Map<TaskContext, Future<WorkReport>> workToReportFuturesMap = new HashMap<>();
         for (int index = 0; index < workUnits.size(); index++) {
             workToReportFuturesMap.put(workUnits.get(index), futures.get(index));
         }
 
-        // gather reports
+        // Gather reports
         List<WorkReport> workReports = new ArrayList<>();
-        for (Map.Entry<Work, Future<WorkReport>> entry : workToReportFuturesMap.entrySet()) {
+        for (Map.Entry<TaskContext, Future<WorkReport>> entry : workToReportFuturesMap.entrySet()) {
             try {
                 WorkReport workReport;
                 try {
@@ -72,14 +79,16 @@ class ParallelFlowExecutor {
                 }
                 workReports.add(workReport);
             } catch (InterruptedException e) {
-                String message = String.format("The parallel flow was interrupted while waiting for the result of work unit '%s'", entry.getKey().getName());
+                String message = String.format("The parallel flow was interrupted while waiting for the result of work unit '%s'", entry.getKey().getWork().getName());
                 throw new RuntimeException(message, e);
             } catch (ExecutionException e) {
-                String message = String.format("Unable to execute work unit '%s'", entry.getKey().getName());
+                String message = String.format("Unable to execute work unit '%s'", entry.getKey().getWork().getName());
                 throw new RuntimeException(message, e);
             }
         }
 
+        LOGGER.info("Shutting down workExecutor");
+        workExecutor.shutdown();
         return workReports;
     }
 }

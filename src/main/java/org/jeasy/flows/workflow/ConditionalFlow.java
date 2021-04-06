@@ -23,11 +23,7 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.NoOpWork;
-import org.jeasy.flows.work.Work;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReport;
-import org.jeasy.flows.work.WorkReportPredicate;
+import org.jeasy.flows.work.*;
 
 import java.util.UUID;
 
@@ -47,10 +43,10 @@ import java.util.UUID;
  */
 public class ConditionalFlow extends AbstractWorkFlow {
 
-    private final Work initialWorkUnit, nextOnPredicateSuccess, nextOnPredicateFailure;
+    private final TaskContext initialWorkUnit, nextOnPredicateSuccess, nextOnPredicateFailure;
     private final WorkReportPredicate predicate;
 
-    ConditionalFlow(String name, Work initialWorkUnit, Work nextOnPredicateSuccess, Work nextOnPredicateFailure, WorkReportPredicate predicate) {
+    ConditionalFlow(String name, TaskContext initialWorkUnit, TaskContext nextOnPredicateSuccess, TaskContext nextOnPredicateFailure, WorkReportPredicate predicate) {
         super(name);
         this.initialWorkUnit = initialWorkUnit;
         this.nextOnPredicateSuccess = nextOnPredicateSuccess;
@@ -62,12 +58,25 @@ public class ConditionalFlow extends AbstractWorkFlow {
      * {@inheritDoc}
      */
     public WorkReport execute(WorkContext workContext) {
-        WorkReport jobReport = initialWorkUnit.execute(workContext);
+        WorkReport jobReport = initialWorkUnit.execute(workContext, initialWorkUnit);
         if (predicate.apply(jobReport)) {
-            jobReport = nextOnPredicateSuccess.execute(workContext);
+            jobReport = nextOnPredicateSuccess.execute(workContext, nextOnPredicateSuccess);
         } else {
-            if (nextOnPredicateFailure != null && !(nextOnPredicateFailure instanceof NoOpWork)) { // else is optional
-                jobReport = nextOnPredicateFailure.execute(workContext);
+            if (nextOnPredicateFailure != null && !(nextOnPredicateFailure.getWork() instanceof NoOpTask)) { // else is optional
+                jobReport = nextOnPredicateFailure.execute(workContext, nextOnPredicateFailure);
+            }
+        }
+        return jobReport;
+    }
+
+    @Override
+    public WorkReport execute(WorkContext workContext, TaskContext taskContext2) {
+        WorkReport jobReport = initialWorkUnit.execute(workContext, initialWorkUnit);
+        if (predicate.apply(jobReport)) {
+            jobReport = nextOnPredicateSuccess.execute(workContext, nextOnPredicateSuccess);
+        } else {
+            if (nextOnPredicateFailure != null && !(nextOnPredicateFailure.getWork() instanceof NoOpTask)) { // else is optional
+                jobReport = nextOnPredicateFailure.execute(workContext, nextOnPredicateFailure);
             }
         }
         return jobReport;
@@ -88,6 +97,7 @@ public class ConditionalFlow extends AbstractWorkFlow {
         }
 
         public interface ExecuteStep {
+            WhenStep execute(TaskContext initialWorkUnit);
             WhenStep execute(Work initialWorkUnit);
         }
 
@@ -96,11 +106,11 @@ public class ConditionalFlow extends AbstractWorkFlow {
         }
 
         public interface ThenStep {
-            OtherwiseStep then(Work work);
+            OtherwiseStep then(TaskContext work);
         }
 
         public interface OtherwiseStep extends BuildStep {
-            BuildStep otherwise(Work work);
+            BuildStep otherwise(TaskContext work);
         }
 
         public interface BuildStep {
@@ -110,14 +120,14 @@ public class ConditionalFlow extends AbstractWorkFlow {
         private static class BuildSteps implements NameStep, ExecuteStep, WhenStep, ThenStep, OtherwiseStep, BuildStep {
 
             private String name;
-            private Work initialWorkUnit, nextOnPredicateSuccess, nextOnPredicateFailure;
+            private TaskContext initialWorkUnit, nextOnPredicateSuccess, nextOnPredicateFailure;
             private WorkReportPredicate predicate;
 
             BuildSteps() {
                 this.name = UUID.randomUUID().toString();
-                this.initialWorkUnit = new NoOpWork();
-                this.nextOnPredicateSuccess = new NoOpWork();
-                this.nextOnPredicateFailure = new NoOpWork();
+                this.initialWorkUnit = new TaskContext(new NoOpTask());
+                this.nextOnPredicateSuccess = new TaskContext(new NoOpTask());
+                this.nextOnPredicateFailure = new TaskContext(new NoOpTask());
                 this.predicate = WorkReportPredicate.ALWAYS_FALSE;
             }
 
@@ -128,8 +138,14 @@ public class ConditionalFlow extends AbstractWorkFlow {
             }
 
             @Override
-            public WhenStep execute(Work initialWorkUnit) {
+            public WhenStep execute(TaskContext initialWorkUnit) {
                 this.initialWorkUnit = initialWorkUnit;
+                return this;
+            }
+
+            @Override
+            public WhenStep execute(Work initialWorkUnit) {
+                this.initialWorkUnit = new TaskContext(initialWorkUnit);
                 return this;
             }
 
@@ -140,13 +156,13 @@ public class ConditionalFlow extends AbstractWorkFlow {
             }
 
             @Override
-            public OtherwiseStep then(Work work) {
+            public OtherwiseStep then(TaskContext work) {
                 this.nextOnPredicateSuccess = work;
                 return this;
             }
 
             @Override
-            public BuildStep otherwise(Work work) {
+            public BuildStep otherwise(TaskContext work) {
                 this.nextOnPredicateFailure = work;
                 return this;
             }

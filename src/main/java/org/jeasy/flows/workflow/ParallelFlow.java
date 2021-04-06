@@ -23,7 +23,7 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.Work;
+import org.jeasy.flows.work.TaskContext;
 import org.jeasy.flows.work.WorkContext;
 import org.jeasy.flows.work.WorkReport;
 
@@ -53,10 +53,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class ParallelFlow extends AbstractWorkFlow {
 
-    private final List<Work> workUnits = new ArrayList<>();
+    private final List<TaskContext> workUnits = new ArrayList<>();
     private final ParallelFlowExecutor workExecutor;
 
-    ParallelFlow(String name, List<Work> workUnits, ParallelFlowExecutor parallelFlowExecutor) {
+    public ParallelFlow(String name, List<TaskContext> workUnits, ParallelFlowExecutor parallelFlowExecutor) {
         super(name);
         this.workUnits.addAll(workUnits);
         this.workExecutor = parallelFlowExecutor;
@@ -66,6 +66,11 @@ public class ParallelFlow extends AbstractWorkFlow {
      * {@inheritDoc}
      */
     public ParallelFlowReport execute(WorkContext workContext) {
+        return execute(workContext, null);
+    }
+
+    @Override
+    public ParallelFlowReport execute(WorkContext workContext, TaskContext taskContext2) {
         ParallelFlowReport workFlowReport = new ParallelFlowReport();
         List<WorkReport> workReports = workExecutor.executeInParallel(workUnits, workContext);
         workFlowReport.addAll(workReports);
@@ -87,7 +92,8 @@ public class ParallelFlow extends AbstractWorkFlow {
         }
 
         public interface ExecuteStep {
-            WithStep execute(Work... workUnits);
+            WithStep execute(TaskContext... workUnits);
+            WithStep execute(List<TaskContext> initialTaskContexts);
         }
 
         public interface WithStep {
@@ -115,7 +121,7 @@ public class ParallelFlow extends AbstractWorkFlow {
         private static class BuildSteps implements NameStep, ExecuteStep, WithStep, TimeoutStep, BuildStep {
 
             private String name;
-            private final List<Work> works;
+            private final List<TaskContext> works;
             private ExecutorService executorService;
             private long timeout;
             private TimeUnit unit;
@@ -132,8 +138,14 @@ public class ParallelFlow extends AbstractWorkFlow {
             }
 
             @Override
-            public WithStep execute(Work... workUnits) {
+            public WithStep execute(TaskContext... workUnits) {
                 this.works.addAll(Arrays.asList(workUnits));
+                return this;
+            }
+
+            @Override
+            public WithStep execute(List<TaskContext> workUnits) {
+                this.works.addAll(workUnits);
                 return this;
             }
 

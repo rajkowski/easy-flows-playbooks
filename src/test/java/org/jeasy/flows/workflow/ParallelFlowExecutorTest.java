@@ -24,11 +24,7 @@
 package org.jeasy.flows.workflow;
 
 import org.assertj.core.api.Assertions;
-import org.jeasy.flows.work.DefaultWorkReport;
-import org.jeasy.flows.work.Work;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReport;
-import org.jeasy.flows.work.WorkStatus;
+import org.jeasy.flows.work.*;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -45,45 +41,43 @@ public class ParallelFlowExecutorTest {
 
         // given
         ExecutorService executorService = Executors.newFixedThreadPool(2);
-        HelloWorldWork work1 = new HelloWorldWork("work1", WorkStatus.COMPLETED);
-        HelloWorldWork work2 = new HelloWorldWork("work2", WorkStatus.FAILED);
+
+        HelloWorldWork work = new HelloWorldWork();
+
+        TaskContext tc1 = new TaskContext(work);
+        tc1.put(HelloWorldWork.STATUS_VAR, WorkStatus.COMPLETED);
+
+        TaskContext tc2 = new TaskContext(work);
+        tc2.put(HelloWorldWork.STATUS_VAR, WorkStatus.FAILED);
+
         WorkContext workContext = Mockito.mock(WorkContext.class);
     ParallelFlowExecutor parallelFlowExecutor = new ParallelFlowExecutor(executorService, 1, TimeUnit.SECONDS);
 
         // when
-        List<WorkReport> workReports = parallelFlowExecutor.executeInParallel(Arrays.asList(work1, work2), workContext);
+        List<WorkReport> workReports = parallelFlowExecutor.executeInParallel(Arrays.asList(tc1, tc2), workContext);
         executorService.shutdown();
 
         // then
         Assertions.assertThat(workReports).hasSize(2);
-        Assertions.assertThat(work1.isExecuted()).isTrue();
-        Assertions.assertThat(work2.isExecuted()).isTrue();
+        Assertions.assertThat(workReports.get(0).getStatus()).isNotEqualTo(workReports.get(1).getStatus());
     }
 
     static class HelloWorldWork implements Work {
 
-        private final String name;
-        private final WorkStatus status;
-        private boolean executed;
+        public static final String STATUS_VAR = "STATUS";
 
-        HelloWorldWork(String name, WorkStatus status) {
-            this.name = name;
-            this.status = status;
+        HelloWorldWork() {
         }
 
         @Override
         public String getName() {
-            return name;
+            return "hello world work";
         }
 
         @Override
-        public WorkReport execute(WorkContext workContext) {
-            executed = true;
-            return new DefaultWorkReport(status, workContext);
-        }
-
-        public boolean isExecuted() {
-            return executed;
+        public WorkReport execute(WorkContext workContext, TaskContext taskContext) {
+            WorkStatus value = (WorkStatus) taskContext.get(STATUS_VAR);
+            return new DefaultWorkReport(value, workContext);
         }
     }
 

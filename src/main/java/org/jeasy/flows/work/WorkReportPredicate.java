@@ -53,11 +53,11 @@ public interface WorkReportPredicate {
      */
     class TimesPredicate implements WorkReportPredicate {
 
-        private final int times;
+        private final long times;
 
         private final AtomicInteger counter = new AtomicInteger();
 
-        public TimesPredicate(int times) {
+        public TimesPredicate(long times) {
             this.times = times;
         }
 
@@ -66,7 +66,7 @@ public interface WorkReportPredicate {
             return counter.incrementAndGet() != times;
         }
 
-        public static TimesPredicate times(int times) {
+        public static TimesPredicate times(long times) {
             return new TimesPredicate(times);
         }
     }

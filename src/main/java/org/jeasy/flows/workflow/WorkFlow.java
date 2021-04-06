@@ -23,13 +23,33 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.Work;
+import org.jeasy.flows.work.*;
+
+import java.util.UUID;
 
 /**
- * Interface to define a flow of work units. A workflow is also a work, this is 
- * what makes workflows composable.
+ * Interface to define a flow of work units.
  *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
 public interface WorkFlow extends Work {
+
+  /**
+   * The name of the unit of work. The name must be unique within a workflow definition.
+   *
+   * @return name of the unit of work.
+   */
+  default String getName() {
+    return UUID.randomUUID().toString();
+  }
+
+  /**
+   * Execute the unit of work and return its report. Implementations are required
+   * to catch any checked or unchecked exceptions and return a {@link WorkReport} instance
+   * with a status of {@link WorkStatus#FAILED} and a reference to the exception.
+   *
+   * @param workContext context in which this unit of work is being executed
+   * @return the execution report
+   */
+  WorkReport execute(WorkContext workContext);
 }

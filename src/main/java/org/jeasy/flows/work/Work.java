@@ -34,14 +34,12 @@ import java.util.UUID;
  *     <li>make sure the work is finished in a finite amount of time</li>
  * </ul>
  *
- * Work name must be unique within a workflow definition.
- * 
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
 public interface Work {
 
     /**
-     * The name of the unit of work. The name must be unique within a workflow definition.
+     * The name of the unit of work.
      * 
      * @return name of the unit of work.
      */
@@ -57,5 +55,5 @@ public interface Work {
      * @param workContext context in which this unit of work is being executed
      * @return the execution report
      */
-    WorkReport execute(WorkContext workContext);
+    WorkReport execute(WorkContext workContext, TaskContext taskContext);
 }

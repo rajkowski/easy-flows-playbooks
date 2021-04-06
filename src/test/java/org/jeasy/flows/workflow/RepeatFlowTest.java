@@ -23,7 +23,7 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.Work;
+import org.jeasy.flows.work.TaskContext;
 import org.jeasy.flows.work.WorkContext;
 import org.jeasy.flows.work.WorkReportPredicate;
 import org.junit.Test;
@@ -34,7 +34,7 @@ public class RepeatFlowTest {
     @Test
     public void testRepeatUntil() {
         // given
-        Work work = Mockito.mock(Work.class);
+        TaskContext work = Mockito.mock(TaskContext.class);
         WorkContext workContext = Mockito.mock(WorkContext.class);
         WorkReportPredicate predicate = WorkReportPredicate.ALWAYS_FALSE;
         RepeatFlow repeatFlow = RepeatFlow.Builder.aNewRepeatFlow()
@@ -46,13 +46,13 @@ public class RepeatFlowTest {
         repeatFlow.execute(workContext);
 
         // then
-        Mockito.verify(work, Mockito.times(1)).execute(workContext);
+        Mockito.verify(work, Mockito.times(1)).execute(workContext, work);
     }
 
     @Test
     public void testRepeatTimes() {
         // given
-        Work work = Mockito.mock(Work.class);
+        TaskContext work = Mockito.mock(TaskContext.class);
         WorkContext workContext = Mockito.mock(WorkContext.class);
         RepeatFlow repeatFlow = RepeatFlow.Builder.aNewRepeatFlow()
                 .repeat(work)
@@ -63,7 +63,7 @@ public class RepeatFlowTest {
         repeatFlow.execute(workContext);
 
         // then
-        Mockito.verify(work, Mockito.times(3)).execute(workContext);
+        Mockito.verify(work, Mockito.times(3)).execute(workContext, work);
     }
 
 }
