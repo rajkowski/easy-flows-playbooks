@@ -2,7 +2,7 @@
 
 <div align="center">
     <b><em>Easy Flows - Playbooks Edition</em></b><br>
-    The simple, stupid workflow engine for Java&trade, with Playbooks;
+    The simple, stupid workflow engine for Java, with Playbooks;
 </div>
 
 ***
