@@ -93,9 +93,9 @@ public class PlaybookManagerTest {
             "      - log: world\n" +
             "  - set: completed = true\n" +
             "  - log: ok\n" +
-            "    when: completed = true\n" +
+            "    when: completed == true\n" +
             "  - log: nok\n" +
-            "    when: completed = false\n";
+            "    when: completed == false\n";
 
     // Load the playbook(s)
     Playbook playbook = YamlReader.readPlaybook(yaml);
@@ -121,11 +121,11 @@ public class PlaybookManagerTest {
             "  - block:\n" +
             "    - log: Repeating 2 times\n" +
             "      repeat: 2\n" +
-            "      when: condition1 = 0\n" +
+            "      when: condition1 == 0\n" +
             "    - set: block1 = yes\n" +
             "  - block:\n" +
             "    - log: This block will be skipped\n" +
-            "      when: 'condition1 = 1'\n" +
+            "      when: 'condition1 == 1'\n" +
             "    - log: Must not be executed\n" +
             "    - set: block2 = yes\n" +
             "  - set: finished = yes\n" +
@@ -173,11 +173,11 @@ public class PlaybookManagerTest {
             "  - block:\n" +
             "    - log: Repeating 2 times\n" +
             "      repeat: 2\n" +
-            "      when: condition1 = 0\n" +
+            "      when: condition1 == 0\n" +
             "    - set: block1 = yes\n" +
             "  - block:\n" +
             "    - log: This block will be executed\n" +
-            "      when: 'condition1 = 1'\n" +
+            "      when: 'condition1 == 1'\n" +
             "    - log: This is executed\n" +
             "    - set: block2 = yes\n" +
             "  - set: finished = yes\n" +
@@ -223,12 +223,12 @@ public class PlaybookManagerTest {
             "    repeat: 3\n" +
             "  - set: condition1 = 1\n" +
             "  - block:\n" +
-            "    when: condition1 = 1\n" +
+            "    when: condition1 == 1\n" +
             "    - log: Repeating 2 times\n" +
             "      repeat: 2\n" +
             "    - set: block1 = yes\n" +
             "  - block:\n" +
-            "    when: condition1 = 0\n" +
+            "    when: condition1 == 0\n" +
             "    - log: This block will not be executed\n" +
             "    - log: This is not executed\n" +
             "    - set: block2 = yes\n" +

@@ -143,7 +143,7 @@ public class YamlReaderTest {
             "    tasks:\n" +
             "      - block:\n" +
             "        - workItem1:\n" +
-            "          when: '{{ websiteHits }} gt 0'\n" +
+            "          when: '{{ websiteHits }} > 0'\n" +
             "      - block:\n" +
             "        - workItem2:\n" +
             "  - workItem3\n" +

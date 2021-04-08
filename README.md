@@ -35,9 +35,9 @@ workflow:
       - log: world
   - set: completed=true
   - log: ok
-    when: completed=true
+    when: completed==true
   - log: nok
-    when: completed=false
+    when: completed==false
 ```
 
 An example with conditional blocks within a sequence; when a task fails within a block, the block fails but other blocks and tasks outside the block resume:
@@ -50,12 +50,12 @@ workflow:
     repeat: 3
   - set: condition1 = 1
   - block:
-    when: condition1 = 1
+    when: condition1 == 1
     - log: Repeating 2 times
       repeat: 2
     - set: block1 = yes
   - block:
-    when: condition1 = 0
+    when: condition1 == 0
     - log: This block will not be executed
     - log: This is not executed
     - set: block2 = yes

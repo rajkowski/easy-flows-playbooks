@@ -23,28 +23,33 @@
  */
 package org.jeasy.flows.work;
 
+import org.apache.commons.jexl3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 public class When {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(When.class.getName());
 
-  public static boolean validate(WorkContext workContext, TaskContext taskContext, String condition) {
+  private static final JexlEngine jexl = new JexlBuilder().create();
 
-    // see if this task can be executed...
-    LOGGER.info("When: " + condition);
-    String[] taskField = condition.split("=");
-    String fieldName = taskField[0].trim();
-    String fieldValue = taskField[1].trim();
-
-    String contextValue = (String) workContext.get(fieldName);
-    LOGGER.info("  Compare: " + fieldValue + " to " + contextValue);
-
-    if (!fieldValue.equals(contextValue)) {
+  public static boolean validate(WorkContext workContext, TaskContext taskContext, String expression) {
+    LOGGER.info("When: " + expression);
+    if (expression == null) {
       return false;
     }
 
-    return true;
+    JexlContext mapContext = new MapContext();
+    for (Map.Entry<String, Object> entry : workContext.getEntrySet()) {
+      mapContext.set(entry.getKey(), entry.getValue());
+    }
+    for (Map.Entry<String, Object> entry : taskContext.getEntrySet()) {
+      mapContext.set(entry.getKey(), entry.getValue());
+    }
+
+    JexlScript compiledScript = jexl.createScript(expression);
+    return (Boolean) compiledScript.execute(mapContext);
   }
 }
