@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A task for validating a condition
+ * A task for validating a condition, assumes an expression
  *
  * @author matt rajkowski
  */
@@ -15,7 +15,7 @@ public class WhenTask implements Work {
   @Override
   public WorkReport execute(WorkContext workContext, TaskContext taskContext) {
     if (taskContext.getData() != null) {
-      if (When.validate(workContext, taskContext, taskContext.getData())) {
+      if (Expression.validate(workContext, taskContext, taskContext.getData())) {
         return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
       }
     }
