@@ -41,6 +41,9 @@ public class PlaybookManager {
     if (!taskLibrary.containsKey("when")) {
       taskLibrary.put("when", WhenTask.class.getName());
     }
+    if (!taskLibrary.containsKey("evaluate")) {
+      taskLibrary.put("evaluate", EvaluateTask.class.getName());
+    }
     if (!taskLibrary.containsKey("log")) {
       taskLibrary.put("log", LogTask.class.getName());
     }
