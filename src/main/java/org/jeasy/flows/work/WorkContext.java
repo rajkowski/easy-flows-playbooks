@@ -23,6 +23,8 @@
  */
 package org.jeasy.flows.work;
 
+import org.jeasy.flows.playbook.Playbook;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,6 +40,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WorkContext {
 
   private final Map<String, Object> context = new ConcurrentHashMap<>();
+
+  public WorkContext() {
+  }
+
+  public WorkContext(Playbook playbook) {
+    put(playbook.getVars());
+  }
 
   public void put(String key, Object value) {
     context.put(key, value);
@@ -60,6 +69,10 @@ public class WorkContext {
 
   public Set<Map.Entry<String, Object>> getEntrySet() {
     return context.entrySet();
+  }
+
+  public Map<String, Object> getMap() {
+    return context;
   }
 
   public boolean containsKey(String key) {

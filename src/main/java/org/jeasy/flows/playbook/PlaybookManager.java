@@ -58,6 +58,10 @@ public class PlaybookManager {
     }
   }
 
+  public static Playbook getPlaybook(String id) {
+    return playbooks.get(id);
+  }
+
   public static void add(Playbook playbook) {
     if (playbook == null) {
       LOGGER.error("Playbook is null");
@@ -118,9 +122,8 @@ public class PlaybookManager {
     }
     // Make sure workContext exists and has playbook vars
     if (workContext == null) {
-      workContext = new WorkContext();
+      workContext = new WorkContext(playbook);
     }
-    workContext.put(playbook.getVars());
 
     LOGGER.debug("Building workflow...");
     SequentialFlow.Builder.NameStep builder = aNewSequentialFlow();
