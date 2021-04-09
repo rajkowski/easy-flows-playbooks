@@ -182,7 +182,10 @@ public class Task {
         if ("name".equals(name)) {
           task.setName(value);
         } else if ("when".equals(name)) {
-          task.setWhen(value);
+          // Determine if this task is a single 'when' task
+          if (blockList.size() > 1) {
+            task.setWhen(value);
+          }
           // This is also a task due to serialization
           if (task.getId() == null) {
             task.setId(name);
