@@ -33,11 +33,8 @@ public class PlaybookManagerTest {
     taskLibrary.put("noop", NoOpTask.class.getName());
     PlaybookManager.register(taskLibrary);
 
-    // Add any programmatic objects for use in the workflows
-    WorkContext workContext = new WorkContext();
-
     // Execute the playbook
-    WorkReport workReport = PlaybookManager.run(playbook.getId(), workContext);
+    WorkReport workReport = PlaybookManager.run(playbook.getId());
     Assert.assertNotNull(workReport);
     Assert.assertEquals(WorkStatus.COMPLETED, workReport.getStatus());
   }
