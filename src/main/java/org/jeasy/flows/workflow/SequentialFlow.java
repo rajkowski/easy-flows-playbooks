@@ -74,7 +74,7 @@ public class SequentialFlow extends AbstractWorkFlow {
             // Determine if there is a 'when' condition that must be satisfied
             boolean canExecute = true;
             if (taskContext.getWhen() != null) {
-                boolean result = When.validate(workContext, taskContext, taskContext.getWhen());
+                boolean result = Expression.validate(workContext, taskContext, taskContext.getWhen());
                 if (!result) {
                     // If within a block, then break;
                     if ("block".equals(getName())) {

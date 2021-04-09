@@ -59,7 +59,7 @@ public class RepeatFlow extends AbstractWorkFlow {
         WorkReport workReport;
         // Determine if there is a 'when' condition that must be satisfied
         if (work.getWhen() != null) {
-            boolean result = When.validate(workContext, work, work.getWhen());
+            boolean result = Expression.validate(workContext, work, work.getWhen());
             if (!result) {
                 return new DefaultWorkReport(WorkStatus.FAILED, workContext);
             }
