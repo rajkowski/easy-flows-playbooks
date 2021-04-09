@@ -18,9 +18,7 @@ public class YamlReaderTest {
             "  api_key: \"<YOUR_API_KEY>\"\n" +
             "  api_key: \"<DUPLICATE_API_KEY>\"\n" +
             "workflow:\n" +
-            "- something:\n" +
-            "- something:\n" +
-            "- condition: \"{{ blogPost.published }} != null\"\n" +
+            "- when: \"{{ blogPost.published != null }}\"\n" +
             "- history: \"{{ blogPost.createdBy | name }} published a blog post: {{ blogPost.title }}\"\n" +
             "- email:\n" +
             "  subject: \"New blog post: {{ blogPost.title }}\"\n" +
@@ -38,8 +36,8 @@ public class YamlReaderTest {
     Assert.assertEquals("Blog Post was published", playbook.getName());
     Assert.assertEquals(1, playbook.getVars().size());
     Assert.assertEquals("<DUPLICATE_API_KEY>", playbook.getVars().get("api_key"));
-    Assert.assertEquals(5, playbook.getTaskList().size());
-    Assert.assertEquals("admins", playbook.getTaskList().get(4).getVars().get("to"));
+    Assert.assertEquals(3, playbook.getTaskList().size());
+    Assert.assertEquals("admins", playbook.getTaskList().get(2).getVars().get("to"));
   }
 
   @Test
@@ -55,10 +53,10 @@ public class YamlReaderTest {
             "  - block:\n" +
             "    - workItem2:\n" +
             "      repeat: 3\n" +
-            "      when: '{{ condition1 }} < 0'\n" +
+            "      when: '{{ condition1 < 0 }}'\n" +
             "  - block:\n" +
             "    - workItem3: hello\n" +
-            "      when: '{{ condition1 }} >= 0'\n" +
+            "      when: '{{ condition1 >= 0}}'\n" +
             "    - workItem4: test\n" +
             "  - workItem5: finished";
 
@@ -116,11 +114,11 @@ public class YamlReaderTest {
             "  - task1:\n" +
             "  - parallel:\n" +
             "    timeout: 10\n" +
-            "    when: 'something == else'\n" +
+            "    when: '{{ something == else }}'\n" +
             "    tasks:\n" +
             "      - block:\n" +
             "        - workItem1:\n" +
-            "          when: '{{ websiteHits }} > 0'\n" +
+            "          when: '{{ websiteHits > 0 }}'\n" +
             "      - block:\n" +
             "        - workItem2:\n" +
             "  - workItem3\n" +

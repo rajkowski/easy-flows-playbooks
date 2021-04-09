@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Functions for working with expressions
@@ -25,7 +27,7 @@ public class Expression {
 
   public static Object evaluate(WorkContext workContext, TaskContext taskContext, String expression) {
     LOGGER.info("Evaluate: " + expression);
-    if (expression == null) {
+    if (expression == null || expression.length() == 0) {
       return false;
     }
 
@@ -49,7 +51,50 @@ public class Expression {
   }
 
   public static Object evaluate(JexlContext mapContext, String expression) {
+    if (expression == null || expression.length() == 0) {
+      return expression;
+    }
+    if (expression.contains("{{") && expression.contains("}}")) {
+      int startIdx = expression.indexOf("{{");
+      int endIdx = expression.indexOf("}}");
+      int checkIdx2 = expression.indexOf("{{", startIdx + 2);
+      if (startIdx > 0 || checkIdx2 > -1 || endIdx < expression.length() - 2) {
+        // Combine multiple expressions into a string, and expressions within a string
+        // {{ Hello }} {{ there }}
+        // {{ Hello }} there
+        // Hello {{ there }}
+        return evaluateAll(mapContext, expression);
+      } else {
+        // Strip off the {{ }}
+        // {{ Hello there }}
+        expression = expression.substring(2, expression.length() - 2).trim();
+      }
+    }
+
+    // Treat as an object
     JexlScript compiledScript = jexl.createScript(expression);
     return compiledScript.execute(mapContext);
   }
+
+  private static Object evaluateAll(JexlContext mapContext, String property) {
+    // Find all of the expressions
+    Pattern pattern = Pattern.compile("\\{\\{(.*?)\\}\\}", Pattern.DOTALL);
+    Matcher matcher = pattern.matcher(property);
+
+    // Evaluate and replace the expressions with a result
+    StringBuffer sb = new StringBuffer();
+    while (matcher.find()) {
+      String expression = matcher.group(1).trim();
+      LOGGER.debug("Expression found: " + expression);
+      JexlScript compiledScript = jexl.createScript(expression);
+      Object result = compiledScript.execute(mapContext);
+      if (result != null) {
+        String replacement = String.valueOf(result);
+        matcher.appendReplacement(sb, replacement);
+      }
+    }
+    matcher.appendTail(sb);
+    return sb.toString();
+  }
+
 }
