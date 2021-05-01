@@ -16,7 +16,8 @@ These are the changes from Easy Flows:
 1. The functionality to use YAML to read in workflows has been added
 2. A 'Playbook Manager' assembles and caches workflows, as 'Playbooks' and executes them; once defined you can execute workflows repeatedly by id
 3. 'Task' items are your tasks which perform work; these can be instantiated once by the Playbook Manager, they are considered immutable, and can be re-used during workflows and with other workflows concurrently; Tasks have a unique id for reference
-4. Some additional features as seen in the example workflows...
+4. YAML can include expressions evaluated using Jexl
+5. Some additional features as seen in the example workflows...
 
 An example with parallel tasks within a sequence:
 
@@ -61,6 +62,30 @@ workflow:
     - set: block2 = yes
   - set: finished = yes
   - log: Finished
+```
+
+An example with expressions, an event object is provided to the work context:
+
+```yaml
+- id: user-registered
+  vars:
+   user: '{{ event.user }}'
+   ipAddress: '{{ event.ipAddress }}'
+  workflow:
+  - email:
+    to-user: '{{ user.id }}'
+    subject: 'Thank you for registering'
+    template: 'cms/registration-confirmation'
+  - email:
+    to-role: 'community-manager'
+    subject: 'User id {{ user.id }} registered'
+    template: 'cms/admin-user-registered-notification'
+  - history:
+    message: '_{{ user.fullName }}_ **{{ verb }}** with the site'
+    actor-id: '{{ user.id }}'
+    verb: registered
+    object: user
+    object-id: '{{ user.id }}'
 ```
 
 This workflow engine is modified from Easy Flows and is considered incompatible (and largely untested).

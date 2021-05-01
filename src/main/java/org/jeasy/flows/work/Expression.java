@@ -42,14 +42,6 @@ public class Expression {
     return evaluate(mapContext, expression);
   }
 
-  public static Object evaluate(Map<String, Object> context, String expression) {
-    JexlContext mapContext = new MapContext();
-    for (Map.Entry<String, Object> entry : context.entrySet()) {
-      mapContext.set(entry.getKey(), entry.getValue());
-    }
-    return evaluate(mapContext, expression);
-  }
-
   public static Object evaluate(JexlContext mapContext, String expression) {
     if (expression == null || expression.length() == 0) {
       return expression;
@@ -82,15 +74,21 @@ public class Expression {
     Matcher matcher = pattern.matcher(property);
 
     // Evaluate and replace the expressions with a result
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     while (matcher.find()) {
       String expression = matcher.group(1).trim();
       LOGGER.debug("Expression found: " + expression);
-      JexlScript compiledScript = jexl.createScript(expression);
-      Object result = compiledScript.execute(mapContext);
-      if (result != null) {
-        String replacement = String.valueOf(result);
-        matcher.appendReplacement(sb, replacement);
+      try {
+        JexlScript compiledScript = jexl.createScript(expression);
+        Object result = compiledScript.execute(mapContext);
+        if (result != null) {
+          String replacement = String.valueOf(result);
+          matcher.appendReplacement(sb, replacement);
+        } else {
+          LOGGER.error("Expression not replaced: " + expression);
+        }
+      } catch (Exception e) {
+        LOGGER.error("Expression error: " + expression, e);
       }
     }
     matcher.appendTail(sb);
