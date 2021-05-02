@@ -17,13 +17,13 @@ public class EvaluateTaskTest {
             "name: Does something...\n" +
             "workflow:\n" +
             "  - block:\n" +
-            "    - when: 'person.age > 18'\n" +
-            "    - evaluate: 'person.setAdult(true);'\n" +
+            "    - when: '{{ person.age > 18 }}'\n" +
+            "    - evaluate: '{{ person.setAdult(true); }}'\n" +
             "  - block:\n" +
-            "    - when: 'person.isAdult == true'\n" +
+            "    - when: '{{ person.isAdult == true }}'\n" +
             "    - log: Person is an adult\n" +
             "  - block:\n" +
-            "    - when: 'person.isAdult == false'\n" +
+            "    - when: '{{ person.isAdult == false }}'\n" +
             "    - log: Person is NOT an adult\n" +
             "  - set: 'finished = yes'\n" +
             "  - log: Finished\n";

@@ -20,6 +20,9 @@ public class Expression {
   private static final JexlEngine jexl = new JexlBuilder().create();
 
   public static boolean validate(WorkContext workContext, TaskContext taskContext, String expression) {
+    if (expression == null || expression.length() == 0) {
+      return false;
+    }
     boolean result = (Boolean) evaluate(workContext, taskContext, expression);
     LOGGER.info("Result is: " + result);
     return result;
@@ -28,7 +31,7 @@ public class Expression {
   public static Object evaluate(WorkContext workContext, TaskContext taskContext, String expression) {
     LOGGER.info("Evaluate: " + expression);
     if (expression == null || expression.length() == 0) {
-      return false;
+      return expression;
     }
 
     JexlContext mapContext = new MapContext();
