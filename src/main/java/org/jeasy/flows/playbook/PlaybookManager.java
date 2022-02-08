@@ -47,6 +47,9 @@ public class PlaybookManager {
     if (!taskLibrary.containsKey("log")) {
       taskLibrary.put("log", LogTask.class.getName());
     }
+    if (!taskLibrary.containsKey("noop")) {
+      taskLibrary.put("noop", NoOpTask.class.getName());
+    }
     for (String className : taskLibrary.keySet()) {
       try {
         if (!taskInstances.containsKey(className)) {

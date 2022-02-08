@@ -27,6 +27,7 @@ public class LogTask implements Work {
       message = (String) workContext.get(GLOBAL_MESSAGE_VAR);
     }
     if (message == null) {
+      LOGGER.warn("A message was not found");
       return new DefaultWorkReport(WorkStatus.FAILED, workContext);
     }
 
@@ -35,7 +36,7 @@ public class LogTask implements Work {
       message = String.valueOf(Expression.evaluate(workContext, taskContext, message));
     }
 
-    LOGGER.info(message);
+    LOGGER.debug(message);
     return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
   }
 }

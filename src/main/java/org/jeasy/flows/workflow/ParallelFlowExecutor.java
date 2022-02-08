@@ -49,7 +49,7 @@ public class ParallelFlowExecutor {
 
     public List<WorkReport> executeInParallel(List<TaskContext> workUnits, WorkContext workContext) {
         // Prepare tasks for parallel submission
-        LOGGER.info("tasks=" + workUnits.size() + "; timeout=" + timeout);
+        LOGGER.debug("tasks=" + workUnits.size() + "; timeout=" + timeout);
         List<Callable<WorkReport>> tasks = new ArrayList<>(workUnits.size());
         workUnits.forEach(work -> tasks.add(() -> work.execute(workContext, work)));
 
@@ -87,7 +87,7 @@ public class ParallelFlowExecutor {
             }
         }
 
-        LOGGER.info("Shutting down workExecutor");
+        LOGGER.debug("Shutting down workExecutor");
         workExecutor.shutdown();
         return workReports;
     }

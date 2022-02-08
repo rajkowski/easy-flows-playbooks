@@ -1,7 +1,5 @@
 package org.jeasy.flows.playbook;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -17,8 +15,6 @@ public class Playbook {
   private String id = null;
   private String name = null;
   private Map<String, Object> vars = null;
-
-  @JsonAlias({"tasks", "workflow"})
   private TaskList taskList = null;
 
   public Playbook() {
@@ -60,10 +56,6 @@ public class Playbook {
 
   public TaskList getTaskList() {
     return taskList;
-  }
-
-  public void setTaskList(TaskList taskList) {
-    this.taskList = taskList;
   }
 
   public void add(Task task) {

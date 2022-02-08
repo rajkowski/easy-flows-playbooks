@@ -38,6 +38,11 @@ public class YamlReaderTest {
     Assert.assertEquals("<DUPLICATE_API_KEY>", playbook.getVars().get("api_key"));
     Assert.assertEquals(3, playbook.getTaskList().size());
     Assert.assertEquals("admins", playbook.getTaskList().get(2).getVars().get("to"));
+    Assert.assertEquals("A new blog post was just published by {{ blogPost.createdBy | name }}.\n" +
+        "\n" +
+        "Title: {{ blogPost.title }}\n" +
+        "Body:\n" +
+        "{{ blogPost.body | html_to_text }}", playbook.getTaskList().get(2).getVars().get("body"));
   }
 
   @Test
@@ -130,19 +135,13 @@ public class YamlReaderTest {
     Assert.assertEquals("Parallel flow", playbook.getName());
     Assert.assertEquals(0, playbook.getVars().size());
     Assert.assertEquals(4, playbook.getTaskList().size());
-
-    // @todo check the block taskList
-
-    for (Task task : playbook.getTaskList()) {
-      System.out.println("Task: " + task.getId() + "=" + task.getData());
-    }
-
     Assert.assertEquals("parallel", playbook.getTaskList().get(1).getId());
     Assert.assertEquals(10, playbook.getTaskList().get(1).getTimeout());
     Assert.assertEquals("workItem3", playbook.getTaskList().get(2).getId());
     Assert.assertEquals("workItem4", playbook.getTaskList().get(3).getId());
     Assert.assertNotNull(playbook.getTaskList().get(1).getTaskList());
-    Assert.assertEquals(2, playbook.getTaskList().get(1).getTaskList().size());
+    // A noop (parallel has 'when') and 2 blocks
+    Assert.assertEquals(3, playbook.getTaskList().get(1).getTaskList().size());
   }
 
   @Test

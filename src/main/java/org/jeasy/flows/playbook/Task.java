@@ -1,12 +1,9 @@
 package org.jeasy.flows.playbook;
 
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,7 +38,6 @@ public class Task {
 
   public Task(String id) {
     this.id = id;
-    LOGGER.debug("Task Created: " + id);
   }
 
   public String getId() {
@@ -120,14 +116,6 @@ public class Task {
     return taskList != null && !taskList.isEmpty();
   }
 
-  public void setTaskList(TaskList taskList) {
-    this.taskList = taskList;
-  }
-
-  public void setTasks(TaskList taskList) {
-    this.taskList = taskList;
-  }
-
   public void add(Task task) {
     if (taskList == null) {
       taskList = new TaskList();
@@ -150,67 +138,4 @@ public class Task {
     vars.put(name, value);
   }
 
-  @JsonAnySetter
-  public void setDynamicProperty(String name, String value) {
-    if (id == null) {
-      LOGGER.debug("Task Created: " + name + "=" + value);
-      this.id = name;
-      if (value != null) {
-        this.data = value;
-      }
-    } else {
-      LOGGER.debug(" Variable added: " + name + "=" + value);
-      addVar(name, value);
-    }
-  }
-
-  @JsonSetter("block")
-  public void setBlock(List<Map<String, String>> block) {
-    // A task block has sub-tasks
-    this.id = "block";
-    if (taskList == null) {
-      taskList = new TaskList();
-    }
-    // Store this block's tasks and properties
-    for (Map<String, String> blockList : block) {
-      Task task = new Task();
-      taskList.add(task);
-      boolean foundId = false;
-      for (String name : blockList.keySet()) {
-        String value = blockList.get(name);
-        // Check for reserved names
-        if ("name".equals(name)) {
-          task.setName(value);
-        } else if ("when".equals(name)) {
-          // Determine if this task is a single 'when' task
-          if (blockList.size() > 1) {
-            task.setWhen(value);
-          }
-          // This is also a task due to serialization
-          if (task.getId() == null) {
-            task.setId(name);
-            task.setData(value);
-            // @note let a later name/value overwrite this
-          }
-        } else if ("delay".equals(name)) {
-          task.setDelay(Long.parseLong(value));
-        } else if ("repeat".equals(name)) {
-          task.setRepeat(Long.parseLong(value));
-        } else if ("timeout".equals(name)) {
-          task.setTimeout(Long.parseLong(value));
-        } else if ("threads".equals(name)) {
-          task.setThreads(Integer.parseInt(value));
-        } else if (value == null) {
-          task.setId(name);
-        } else if (!foundId) {
-          task.setId(name);
-          task.setData(value);
-          foundId = true;
-        } else {
-          // add vars
-          task.addVar(name, value);
-        }
-      }
-    }
-  }
 }

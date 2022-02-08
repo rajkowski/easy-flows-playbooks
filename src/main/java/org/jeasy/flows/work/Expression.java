@@ -1,6 +1,7 @@
 package org.jeasy.flows.work;
 
 import org.apache.commons.jexl3.*;
+import org.jeasy.flows.playbook.Playbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,17 +20,54 @@ public class Expression {
 
   private static final JexlEngine jexl = new JexlBuilder().create();
 
+  public static void applyVarExpressionsToWorkContext(Playbook playbook, WorkContext workContext, Map<String, Object> starterObjectMap) {
+    // Parse variables for the work context
+    Map<String, Object> vars = playbook.getVars();
+    if (!vars.isEmpty()) {
+
+      // The expression engine will need a separate context with the starter objects
+      JexlContext mapContext = new MapContext();
+      for (Map.Entry<String, Object> varEntry : starterObjectMap.entrySet()) {
+        mapContext.set(varEntry.getKey(), varEntry.getValue());
+      }
+
+      // Determine the var values
+      for (Map.Entry<String, Object> varEntry : vars.entrySet()) {
+
+        LOGGER.debug("Check var: " + varEntry.getKey() + "=" + varEntry.getValue());
+        String name = varEntry.getKey();
+        String value = (String) varEntry.getValue();
+
+        if (value != null && value.contains("{{") && value.contains("}}")) {
+          // This is an expression
+          LOGGER.debug("Use expression: " + name + "=" + value);
+          Object result = Expression.evaluate(mapContext, value);
+          if (result != null) {
+            LOGGER.debug("Setting expression result: " + name + "=" + result.getClass().getName());
+          } else {
+            LOGGER.debug("Setting null expression result: " + name);
+          }
+          workContext.put(name, result);
+        } else {
+          // This is a simple value
+          LOGGER.debug("Setting: " + name + "=" + value);
+          workContext.put(name, value);
+        }
+      }
+    }
+  }
+
   public static boolean validate(WorkContext workContext, TaskContext taskContext, String expression) {
     if (expression == null || expression.length() == 0) {
       return false;
     }
     boolean result = (Boolean) evaluate(workContext, taskContext, expression);
-    LOGGER.info("Result is: " + result);
+    LOGGER.debug("Result is: " + result);
     return result;
   }
 
   public static Object evaluate(WorkContext workContext, TaskContext taskContext, String expression) {
-    LOGGER.info("Evaluate: " + expression);
+    LOGGER.debug("Evaluate: " + expression);
     if (expression == null || expression.length() == 0) {
       return expression;
     }
@@ -62,12 +100,15 @@ public class Expression {
       } else {
         // Strip off the {{ }}
         // {{ Hello there }}
-        expression = expression.substring(2, expression.length() - 2).trim();
+        expression = expression.substring(startIdx + 2, endIdx).trim();
       }
     }
 
     // Treat as an object
+    LOGGER.debug("Compiling script for expression: " + expression);
     JexlScript compiledScript = jexl.createScript(expression);
+
+    LOGGER.debug("Executing script: " + expression);
     return compiledScript.execute(mapContext);
   }
 

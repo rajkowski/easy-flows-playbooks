@@ -49,7 +49,9 @@ public class WorkContext {
   }
 
   public void put(String key, Object value) {
-    context.put(key, value);
+    if (value != null) {
+      context.put(key, value);
+    }
   }
 
   public void put(Map<String, Object> vars) {

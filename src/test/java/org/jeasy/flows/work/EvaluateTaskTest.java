@@ -30,6 +30,7 @@ public class EvaluateTaskTest {
 
     // Load the playbook
     Playbook playbook = YamlReader.readPlaybook(yaml);
+    Assert.assertEquals(5, playbook.getTaskList().size());
     PlaybookManager.add(playbook);
 
     // Add any programmatic objects for use in the workflows

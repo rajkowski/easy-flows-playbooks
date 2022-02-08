@@ -82,7 +82,7 @@ public class PlaybookManagerTest {
             "    repeat: 3\n" +
             "  - parallel:\n" +
             "    threads: 2\n" +
-            "    timeout: 3\n" +
+            "    timeout: 5\n" +
             "    tasks:\n" +
             "      - log: hello\n" +
 //            "        repeat: 4\n" +
@@ -226,8 +226,8 @@ public class PlaybookManagerTest {
             "    - set: block1 = yes\n" +
             "  - block:\n" +
             "    when: condition1 == 0\n" +
-            "    - log: This block will not be executed\n" +
-            "    - log: This is not executed\n" +
+            "    - log: THIS SHOULD NOT BE SHOWING\n" +
+            "    - log: THIS SHOULD NOT BE SHOWING EITHER\n" +
             "    - set: block2 = yes\n" +
             "  - set: finished = yes\n" +
             "  - log: Finished\n";
