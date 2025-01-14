@@ -23,9 +23,16 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.*;
-
 import java.util.UUID;
+
+import org.jeasy.flows.work.DefaultWorkReport;
+import org.jeasy.flows.work.Expression;
+import org.jeasy.flows.work.NoOpTask;
+import org.jeasy.flows.work.TaskContext;
+import org.jeasy.flows.work.WorkContext;
+import org.jeasy.flows.work.WorkReport;
+import org.jeasy.flows.work.WorkReportPredicate;
+import org.jeasy.flows.work.WorkStatus;
 
 /**
  * A repeat flow executes a work repeatedly until its report satisfies a given predicate.
@@ -90,6 +97,7 @@ public class RepeatFlow extends AbstractWorkFlow {
 
         public interface UntilStep {
             BuildStep until(WorkReportPredicate predicate);
+
             BuildStep times(long times);
         }
 
@@ -108,7 +116,7 @@ public class RepeatFlow extends AbstractWorkFlow {
                 this.work = new TaskContext(new NoOpTask());
                 this.predicate = WorkReportPredicate.ALWAYS_FALSE;
             }
-            
+
             @Override
             public RepeatStep named(String name) {
                 this.name = name;

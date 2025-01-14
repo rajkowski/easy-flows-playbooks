@@ -23,11 +23,11 @@
  */
 package org.jeasy.flows.work;
 
-import org.jeasy.flows.playbook.Playbook;
-
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.jeasy.flows.playbook.Playbook;
 
 /**
  * Work execution context. This can be used to pass initial parameters to the

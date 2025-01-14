@@ -23,9 +23,14 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.*;
-
 import java.util.UUID;
+
+import org.jeasy.flows.work.NoOpTask;
+import org.jeasy.flows.work.TaskContext;
+import org.jeasy.flows.work.Work;
+import org.jeasy.flows.work.WorkContext;
+import org.jeasy.flows.work.WorkReport;
+import org.jeasy.flows.work.WorkReportPredicate;
 
 /**
  * A conditional flow is defined by 4 artifacts:
@@ -46,7 +51,8 @@ public class ConditionalFlow extends AbstractWorkFlow {
     private final TaskContext initialWorkUnit, nextOnPredicateSuccess, nextOnPredicateFailure;
     private final WorkReportPredicate predicate;
 
-    ConditionalFlow(String name, TaskContext initialWorkUnit, TaskContext nextOnPredicateSuccess, TaskContext nextOnPredicateFailure, WorkReportPredicate predicate) {
+    ConditionalFlow(String name, TaskContext initialWorkUnit, TaskContext nextOnPredicateSuccess,
+            TaskContext nextOnPredicateFailure, WorkReportPredicate predicate) {
         super(name);
         this.initialWorkUnit = initialWorkUnit;
         this.nextOnPredicateSuccess = nextOnPredicateSuccess;
@@ -98,6 +104,7 @@ public class ConditionalFlow extends AbstractWorkFlow {
 
         public interface ExecuteStep {
             WhenStep execute(TaskContext initialWorkUnit);
+
             WhenStep execute(Work initialWorkUnit);
         }
 

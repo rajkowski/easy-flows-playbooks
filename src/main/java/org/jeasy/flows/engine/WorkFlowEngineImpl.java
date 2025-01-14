@@ -29,7 +29,6 @@ import org.jeasy.flows.workflow.WorkFlow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 class WorkFlowEngineImpl implements WorkFlowEngine {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkFlowEngineImpl.class);
