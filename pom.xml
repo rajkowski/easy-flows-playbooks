@@ -8,53 +8,60 @@
         <version>7</version>
     </parent>
 
-    <groupId>org.jeasy</groupId>
-    <artifactId>easy-flows-playbook</artifactId>
-    <version>0.6-SNAPSHOT</version>
+    <groupId>com.github.rajkowski</groupId>
+    <artifactId>easy-flows-playbooks</artifactId>
+    <version>0.7-SNAPSHOT</version>
 
-    <name>Easy Flows</name>
+    <name>Easy Flows Playbooks</name>
     <description>The simple, stupid workflow engine for Java, with Playbooks</description>
-    <url>http://www.github.com/j-easy/easy-flows</url>
+    <url>https://github.com/rajkowski/easy-flows-playbooks</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <slf4j.version>1.7.30</slf4j.version>
+        <java.version>17</java.version>
+        <slf4j.version>2.0.16</slf4j.version>
         <jexl.version>3.2.1</jexl.version>
-        <java.version>11</java.version>
-        <junit.version>4.13.1</junit.version>
-        <assertj.version>3.17.2</assertj.version>
-        <mockito.version>3.5.13</mockito.version>
-        <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-        <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
+        <junit.version>5.11.4</junit.version>
+        <mockito.version>5.15.2</mockito.version>
+        <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>3.2.2</maven-surefire-plugin.version>
+        <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
     </properties>
 
     <scm>
-        <url>git@github.com:j-easy/easy-flows.git</url>
-        <connection>scm:git:git@github.com:j-easy/easy-flows.git</connection>
-        <developerConnection>scm:git:git@github.com:j-easy/easy-flows.git</developerConnection>
+        <url>git@github.com:rajkowski/easy-flows-playbooks.git</url>
+        <connection>scm:git:git@github.com:rajkowski/easy-flows-playbooks.git</connection>
+        <developerConnection>scm:git:git@github.com:rajkowski/easy-flows-playbooks.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/j-easy/easy-flows/issues</url>
+        <url>https://github.com/rajkowski/easy-flows-playbooks/issues</url>
     </issueManagement>
 
     <ciManagement>
         <system>Github Actions</system>
-        <url>https://github.com/j-easy/easy-flows/actions</url>
+        <url>https://github.com/rajkowski/easy-flows-playbooks/actions</url>
     </ciManagement>
 
     <developers>
+        <developer>
+            <id>rajkowski</id>
+            <name>Matt Rajkowski</name>
+            <url>https://github.com/rajkowski/easy-flows-playbooks</url>
+            <roles>
+                <role>Lead developer</role>
+            </roles>
+        </developer>
         <developer>
             <id>benas</id>
             <name>Mahmoud Ben Hassine</name>
             <url>http://benas.github.io</url>
             <email>mahmoud.benhassine@icloud.com</email>
             <roles>
-                <role>Lead developer</role>
+                <role>Original lead developer</role>
             </roles>
         </developer>
     </developers>
@@ -83,15 +90,9 @@
             <version>${jexl.version}</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
