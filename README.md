@@ -9,7 +9,7 @@
 
 ## What is the Playbooks Edition?
 
-In this version you can define the workflows in YAML similar to Ansible, or from other resources. Playbooks contain the rules and configuration for executing tasks. Supply your YAML, and your own map of task ids and classes. Emphasis is on configuration over code. Jackson/YAML is a required dependency.
+In this version you can define the workflows in YAML similar to Ansible, or from other resources. Playbooks contain the rules and configuration for executing tasks. Supply your YAML, and your own map of task ids and classes. Emphasis is on configuration over code.
 
 These are the changes from Easy Flows:
 

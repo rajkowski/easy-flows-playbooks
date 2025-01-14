@@ -23,18 +23,18 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.TaskContext;
-import org.jeasy.flows.work.WorkContext;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import java.util.Arrays;
 import java.util.List;
 
-public class SequentialFlowTest {
+import org.jeasy.flows.work.TaskContext;
+import org.jeasy.flows.work.WorkContext;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+class SequentialFlowTest {
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         // given
         TaskContext work1 = Mockito.mock(TaskContext.class);
         TaskContext work2 = Mockito.mock(TaskContext.class);
@@ -60,7 +60,7 @@ public class SequentialFlowTest {
     }
 
     @Test
-    public void testPassingMultipleWorkUnitsAtOnce() {
+    void testPassingMultipleWorkUnitsAtOnce() {
         // given
         TaskContext work1 = Mockito.mock(TaskContext.class);
         TaskContext work2 = Mockito.mock(TaskContext.class);

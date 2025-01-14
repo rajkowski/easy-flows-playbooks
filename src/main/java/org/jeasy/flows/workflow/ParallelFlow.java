@@ -23,16 +23,16 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.TaskContext;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReport;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import org.jeasy.flows.work.TaskContext;
+import org.jeasy.flows.work.WorkContext;
+import org.jeasy.flows.work.WorkReport;
 
 /**
  * A parallel flow executes a set of work units in parallel. A {@link ParallelFlow}
@@ -82,7 +82,7 @@ public class ParallelFlow extends AbstractWorkFlow {
         private Builder() {
             // force usage of method aNewParallelFlow
         }
-        
+
         public static NameStep aNewParallelFlow() {
             return new BuildSteps();
         }
@@ -93,6 +93,7 @@ public class ParallelFlow extends AbstractWorkFlow {
 
         public interface ExecuteStep {
             WithStep execute(TaskContext... workUnits);
+
             WithStep execute(List<TaskContext> initialTaskContexts);
         }
 
@@ -154,7 +155,7 @@ public class ParallelFlow extends AbstractWorkFlow {
                 this.executorService = executorService;
                 return this;
             }
-            
+
             @Override
             public BuildStep timeout(long timeout, TimeUnit unit) {
                 this.timeout = timeout;

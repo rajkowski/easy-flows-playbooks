@@ -23,15 +23,24 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import org.jeasy.flows.work.DefaultWorkReport;
+import org.jeasy.flows.work.TaskContext;
+import org.jeasy.flows.work.WorkContext;
+import org.jeasy.flows.work.WorkReport;
+import org.jeasy.flows.work.WorkStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ParallelFlowExecutor {
 
@@ -79,7 +88,9 @@ public class ParallelFlowExecutor {
                 }
                 workReports.add(workReport);
             } catch (InterruptedException e) {
-                String message = String.format("The parallel flow was interrupted while waiting for the result of work unit '%s'", entry.getKey().getWork().getName());
+                String message = String.format(
+                        "The parallel flow was interrupted while waiting for the result of work unit '%s'",
+                        entry.getKey().getWork().getName());
                 throw new RuntimeException(message, e);
             } catch (ExecutionException e) {
                 String message = String.format("Unable to execute work unit '%s'", entry.getKey().getWork().getName());

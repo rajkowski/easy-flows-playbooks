@@ -23,13 +23,13 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReport;
-import org.jeasy.flows.work.WorkStatus;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.jeasy.flows.work.WorkContext;
+import org.jeasy.flows.work.WorkReport;
+import org.jeasy.flows.work.WorkStatus;
 
 /**
  * Aggregate report of the partial reports of work units executed in a parallel flow.

@@ -23,9 +23,12 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.*;
-
 import java.util.UUID;
+
+import org.jeasy.flows.work.Work;
+import org.jeasy.flows.work.WorkContext;
+import org.jeasy.flows.work.WorkReport;
+import org.jeasy.flows.work.WorkStatus;
 
 /**
  * Interface to define a flow of work units.

@@ -23,15 +23,19 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.jeasy.flows.work.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.jeasy.flows.work.WorkStatus.FAILED;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.jeasy.flows.work.WorkStatus.FAILED;
+import org.jeasy.flows.work.Expression;
+import org.jeasy.flows.work.TaskContext;
+import org.jeasy.flows.work.Work;
+import org.jeasy.flows.work.WorkContext;
+import org.jeasy.flows.work.WorkReport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A sequential flow executes a set of work units in sequence.
@@ -82,7 +86,8 @@ public class SequentialFlow extends AbstractWorkFlow {
                     }
                     // Else skip just this task
                     canExecute = false;
-                    LOGGER.warn("Skipping " + taskContext.getWork().getClass().getSimpleName() + ", condition not met: " + taskContext.getWhen());
+                    LOGGER.warn("Skipping " + taskContext.getWork().getClass().getSimpleName() + ", condition not met: "
+                            + taskContext.getWhen());
                 }
             }
             if (canExecute) {
@@ -90,8 +95,10 @@ public class SequentialFlow extends AbstractWorkFlow {
                     LOGGER.debug("Executing work: " + taskContext.getWork().getClass().getSimpleName());
                 }
                 workReport = taskContext.getWork().execute(workContext, taskContext);
-                if (workReport != null && FAILED.equals(workReport.getStatus()) && !"block".equals(taskContext.getWork().getName())) {
-                    LOGGER.warn("Work unit '{}' has failed, skipping subsequent work units", taskContext.getWork().getName());
+                if (workReport != null && FAILED.equals(workReport.getStatus())
+                        && !"block".equals(taskContext.getWork().getName())) {
+                    LOGGER.warn("Work unit '{}' has failed, skipping subsequent work units",
+                            taskContext.getWork().getName());
                     break;
                 }
             }
@@ -115,14 +122,19 @@ public class SequentialFlow extends AbstractWorkFlow {
 
         public interface ExecuteStep {
             ThenStep execute(TaskContext taskContext);
+
             ThenStep execute(Work work);
+
             ThenStep execute(List<TaskContext> initialTaskContexts);
         }
 
         public interface ThenStep {
             ThenStep then(TaskContext nextTaskContext);
+
             ThenStep then(Work work);
+
             ThenStep then(List<TaskContext> nextTaskContexts);
+
             SequentialFlow build();
         }
 

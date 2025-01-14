@@ -23,21 +23,26 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.assertj.core.api.Assertions;
-import org.jeasy.flows.work.*;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class ParallelFlowExecutorTest {
+import org.jeasy.flows.work.DefaultWorkReport;
+import org.jeasy.flows.work.TaskContext;
+import org.jeasy.flows.work.Work;
+import org.jeasy.flows.work.WorkContext;
+import org.jeasy.flows.work.WorkReport;
+import org.jeasy.flows.work.WorkStatus;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+class ParallelFlowExecutorTest {
 
     @Test
-    public void testExecute() {
+    void testExecute() {
 
         // given
         ExecutorService executorService = Executors.newFixedThreadPool(2);
@@ -51,15 +56,15 @@ public class ParallelFlowExecutorTest {
         tc2.put(HelloWorldWork.STATUS_VAR, WorkStatus.FAILED);
 
         WorkContext workContext = Mockito.mock(WorkContext.class);
-    ParallelFlowExecutor parallelFlowExecutor = new ParallelFlowExecutor(executorService, 1, TimeUnit.SECONDS);
+        ParallelFlowExecutor parallelFlowExecutor = new ParallelFlowExecutor(executorService, 1, TimeUnit.SECONDS);
 
         // when
         List<WorkReport> workReports = parallelFlowExecutor.executeInParallel(Arrays.asList(tc1, tc2), workContext);
         executorService.shutdown();
 
         // then
-        Assertions.assertThat(workReports).hasSize(2);
-        Assertions.assertThat(workReports.get(0).getStatus()).isNotEqualTo(workReports.get(1).getStatus());
+        Assertions.assertEquals(2, workReports.size());
+        Assertions.assertNotEquals(workReports.get(0).getStatus(), workReports.get(1).getStatus());
     }
 
     static class HelloWorldWork implements Work {

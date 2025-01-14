@@ -23,18 +23,6 @@
  */
 package org.jeasy.flows.engine;
 
-import org.jeasy.flows.work.*;
-import org.jeasy.flows.workflow.*;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.jeasy.flows.engine.WorkFlowEngineBuilder.aNewWorkFlowEngine;
 import static org.jeasy.flows.work.WorkReportPredicate.COMPLETED;
 import static org.jeasy.flows.workflow.ConditionalFlow.Builder.aNewConditionalFlow;
@@ -42,18 +30,39 @@ import static org.jeasy.flows.workflow.ParallelFlow.Builder.aNewParallelFlow;
 import static org.jeasy.flows.workflow.RepeatFlow.Builder.aNewRepeatFlow;
 import static org.jeasy.flows.workflow.SequentialFlow.Builder.aNewSequentialFlow;
 
-public class WorkFlowEngineImplTest {
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import org.jeasy.flows.work.DefaultWorkReport;
+import org.jeasy.flows.work.TaskContext;
+import org.jeasy.flows.work.Work;
+import org.jeasy.flows.work.WorkContext;
+import org.jeasy.flows.work.WorkReport;
+import org.jeasy.flows.work.WorkStatus;
+import org.jeasy.flows.workflow.ConditionalFlow;
+import org.jeasy.flows.workflow.ParallelFlow;
+import org.jeasy.flows.workflow.RepeatFlow;
+import org.jeasy.flows.workflow.SequentialFlow;
+import org.jeasy.flows.workflow.WorkFlow;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+class WorkFlowEngineImplTest {
 
     private final WorkFlowEngine workFlowEngine = new WorkFlowEngineImpl();
 
     @Test
-    public void run() {
+    void run() {
         // given
         WorkFlow workFlow = Mockito.mock(WorkFlow.class);
         WorkContext workContext = Mockito.mock(WorkContext.class);
 
         // when
-        workFlowEngine.run(workFlow,workContext);
+        workFlowEngine.run(workFlow, workContext);
 
         // then
         Mockito.verify(workFlow).execute(workContext);
@@ -64,7 +73,7 @@ public class WorkFlowEngineImplTest {
      */
 
     @Test
-    public void composeWorkFlowFromSeparateFlowsAndExecuteIt() {
+    void composeWorkFlowFromSeparateFlowsAndExecuteIt() {
 
         PrintMessageWork work = new PrintMessageWork();
 
@@ -102,13 +111,12 @@ public class WorkFlowEngineImplTest {
         WorkContext workContext = new WorkContext();
         WorkReport workReport = workFlowEngine.run(sequentialFlow, workContext);
         executorService.shutdown();
-        assertThat(workReport.getStatus()).isEqualTo(WorkStatus.COMPLETED);
+        Assertions.assertEquals(WorkStatus.COMPLETED, workReport.getStatus());
         System.out.println("workflow report = " + workReport);
     }
 
-
     @Test
-    public void defineWorkFlowInlineAndExecuteIt() {
+    void defineWorkFlowInlineAndExecuteIt() {
 
         PrintMessageWork work = new PrintMessageWork();
 
@@ -120,16 +128,16 @@ public class WorkFlowEngineImplTest {
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         WorkFlow workflow = aNewSequentialFlow()
                 .execute(aNewRepeatFlow()
-                            .named("print foo 3 times")
-                            .repeat(tc1)
-                            .times(3)
-                            .build())
+                        .named("print foo 3 times")
+                        .repeat(tc1)
+                        .times(3)
+                        .build())
                 .then(aNewConditionalFlow()
                         .execute(aNewParallelFlow()
-                                    .named("print 'hello' and 'world' in parallel")
-                                    .execute(tc2, tc3)
-                                    .with(executorService)
-                                    .timeout(1, TimeUnit.SECONDS)
+                                .named("print 'hello' and 'world' in parallel")
+                                .execute(tc2, tc3)
+                                .with(executorService)
+                                .timeout(1, TimeUnit.SECONDS)
                                 .build())
                         .when(COMPLETED)
                         .then(tc4)
@@ -140,12 +148,12 @@ public class WorkFlowEngineImplTest {
         WorkContext workContext = new WorkContext();
         WorkReport workReport = workFlowEngine.run(workflow, workContext);
         executorService.shutdown();
-        assertThat(workReport.getStatus()).isEqualTo(WorkStatus.COMPLETED);
+        Assertions.assertEquals(WorkStatus.COMPLETED, workReport.getStatus());
         System.out.println("workflow report = " + workReport);
     }
 
     @Test
-    public void useWorkContextToPassInitialParametersAndShareDataBetweenWorkUnits() {
+    void useWorkContextToPassInitialParametersAndShareDataBetweenWorkUnits() {
 
         WordCountWork work = new WordCountWork();
         TaskContext tc1 = new TaskContext(work, "hello foo hello you");
@@ -160,10 +168,10 @@ public class WorkFlowEngineImplTest {
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         WorkFlow workflow = aNewSequentialFlow()
                 .execute(aNewParallelFlow()
-                            .execute(tc1, tc2)
-                            .with(executorService)
-                            .timeout(1, TimeUnit.SECONDS)
-                            .build())
+                        .execute(tc1, tc2)
+                        .with(executorService)
+                        .timeout(1, TimeUnit.SECONDS)
+                        .build())
                 .then(work3)
                 .then(work4)
                 .build();
@@ -172,7 +180,7 @@ public class WorkFlowEngineImplTest {
         WorkContext workContext = new WorkContext();
         WorkReport workReport = workFlowEngine.run(workflow, workContext);
         executorService.shutdown();
-        assertThat(workReport.getStatus()).isEqualTo(WorkStatus.COMPLETED);
+        Assertions.assertEquals(WorkStatus.COMPLETED, workReport.getStatus());
     }
 
     static class PrintMessageWork implements Work {
@@ -196,7 +204,7 @@ public class WorkFlowEngineImplTest {
         }
 
     }
-    
+
     static class WordCountWork implements Work {
 
         public static final String PARTITION_VAR = "partition";
@@ -217,7 +225,7 @@ public class WorkFlowEngineImplTest {
             return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
         }
     }
-    
+
     static class AggregateWordCountsWork implements Work {
 
         @Override
