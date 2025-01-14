@@ -23,20 +23,20 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.assertj.core.api.Assertions;
 import org.jeasy.flows.work.DefaultWorkReport;
 import org.jeasy.flows.work.WorkContext;
 import org.jeasy.flows.work.WorkStatus;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class ParallelFlowReportTest {
+class ParallelFlowReportTest {
 
 	private Exception exception;
 	private ParallelFlowReport parallelFlowReport;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		exception = new Exception("test exception");
 		WorkContext workContext = new WorkContext();
 		parallelFlowReport = new ParallelFlowReport();
@@ -45,17 +45,17 @@ public class ParallelFlowReportTest {
 	}
 
 	@Test
-	public void testGetStatus() {
-		Assertions.assertThat(parallelFlowReport.getStatus()).isEqualTo(WorkStatus.FAILED);
+	void testGetStatus() {
+		Assertions.assertEquals(WorkStatus.FAILED, parallelFlowReport.getStatus());
 	}
 
 	@Test
-	public void testGetError() {
-		Assertions.assertThat(parallelFlowReport.getError()).isEqualTo(exception);
+	void testGetError() {
+		Assertions.assertEquals(parallelFlowReport.getError(), exception);
 	}
 
 	@Test
-	public void testGetReports() {
-		Assertions.assertThat(parallelFlowReport.getReports()).hasSize(2);
+	void testGetReports() {
+		Assertions.assertEquals(2, parallelFlowReport.getReports().size());
 	}
 }

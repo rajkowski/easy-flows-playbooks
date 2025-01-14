@@ -23,19 +23,19 @@
  */
 package org.jeasy.flows.workflow;
 
-import org.assertj.core.api.Assertions;
-import org.jeasy.flows.work.TaskContext;
-import org.jeasy.flows.work.WorkContext;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import java.util.Arrays;
 import java.util.List;
 
-public class ParallelFlowTest {
+import org.jeasy.flows.work.TaskContext;
+import org.jeasy.flows.work.WorkContext;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+class ParallelFlowTest {
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         // given
         TaskContext work1 = Mockito.mock(TaskContext.class);
         TaskContext work2 = Mockito.mock(TaskContext.class);
@@ -48,7 +48,7 @@ public class ParallelFlowTest {
         ParallelFlowReport parallelFlowReport = parallelFlow.execute(workContext);
 
         // then
-        Assertions.assertThat(parallelFlowReport).isNotNull();
+        Assertions.assertNotNull(parallelFlowReport);
         Mockito.verify(parallelFlowExecutor).executeInParallel(works, workContext);
     }
 

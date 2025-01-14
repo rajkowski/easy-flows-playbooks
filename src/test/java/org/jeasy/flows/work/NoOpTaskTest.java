@@ -23,24 +23,23 @@
  */
 package org.jeasy.flows.work;
 
-import org.assertj.core.api.Assertions;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class NoOpTaskTest {
+class NoOpTaskTest {
 
 	private final NoOpTask work = new NoOpTask();
 
 	@Test
-	public void getName() {
-		Assertions.assertThat(work.getName()).isNotNull();
+	void getName() {
+		Assertions.assertNotNull(work.getName());
 	}
 
 	@Test
-	public void testExecute() {
+	void testExecute() {
 		WorkReport workReport = work.execute(new WorkContext(), new TaskContext(work));
-		Assert.assertNotNull(workReport);
-		Assertions.assertThat(workReport.getStatus()).isEqualTo(WorkStatus.COMPLETED);
+		Assertions.assertNotNull(workReport);
+		Assertions.assertEquals(WorkStatus.COMPLETED, workReport.getStatus());
 
 	}
 }

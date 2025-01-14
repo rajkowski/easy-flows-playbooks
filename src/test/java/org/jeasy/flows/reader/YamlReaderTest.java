@@ -1,44 +1,68 @@
+/*
+ * The MIT License
+ *
+ *  Copyright 2021 Matt Rajkowski (https://github.com/rajkowski)
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the "Software"), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is
+ *  furnished to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in
+ *  all copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ *  THE SOFTWARE.
+ */
 package org.jeasy.flows.reader;
-
-import org.jeasy.flows.playbook.Playbook;
-import org.jeasy.flows.playbook.Task;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.util.List;
 
-public class YamlReaderTest {
+import org.jeasy.flows.playbook.Playbook;
+import org.jeasy.flows.playbook.Task;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+class YamlReaderTest {
 
   @Test
-  public void testRead() {
-    String yaml =
-        "id: blog_post_published\n" +
-            "name: Blog Post was published\n" +
-            "vars:\n" +
-            "  api_key: \"<YOUR_API_KEY>\"\n" +
-            "  api_key: \"<DUPLICATE_API_KEY>\"\n" +
-            "workflow:\n" +
-            "- when: \"{{ blogPost.published != null }}\"\n" +
-            "- history: \"{{ blogPost.createdBy | name }} published a blog post: {{ blogPost.title }}\"\n" +
-            "- email:\n" +
-            "  subject: \"New blog post: {{ blogPost.title }}\"\n" +
-            "  to: admins\n" +
-            "  body: |\n" +
-            "    A new blog post was just published by {{ blogPost.createdBy | name }}.\n" +
-            "\n" +
-            "    Title: {{ blogPost.title }}\n" +
-            "    Body:\n" +
-            "    {{ blogPost.body | html_to_text }}";
+  void testRead() {
+    String yaml = """
+        id: blog_post_published
+        name: Blog Post was published
+        vars:
+          api_key: "<YOUR_API_KEY>"
+          api_key: "<DUPLICATE_API_KEY>"
+        workflow:
+        - when: "{{ blogPost.published != null }}"
+        - history: "{{ blogPost.createdBy | name }} published a blog post: {{ blogPost.title }}"
+        - email:
+          subject: "New blog post: {{ blogPost.title }}"
+          to: admins
+          body: |
+            A new blog post was just published by {{ blogPost.createdBy | name }}.
+
+            Title: {{ blogPost.title }}
+            Body:
+            {{ blogPost.body | html_to_text }}
+        """;
 
     Playbook playbook = YamlReader.readPlaybook(yaml);
-    Assert.assertNotNull(playbook);
-    Assert.assertEquals("blog_post_published", playbook.getId());
-    Assert.assertEquals("Blog Post was published", playbook.getName());
-    Assert.assertEquals(1, playbook.getVars().size());
-    Assert.assertEquals("<DUPLICATE_API_KEY>", playbook.getVars().get("api_key"));
-    Assert.assertEquals(3, playbook.getTaskList().size());
-    Assert.assertEquals("admins", playbook.getTaskList().get(2).getVars().get("to"));
-    Assert.assertEquals("A new blog post was just published by {{ blogPost.createdBy | name }}.\n" +
+    Assertions.assertNotNull(playbook);
+    Assertions.assertEquals("blog_post_published", playbook.getId());
+    Assertions.assertEquals("Blog Post was published", playbook.getName());
+    Assertions.assertEquals(1, playbook.getVars().size());
+    Assertions.assertEquals("<DUPLICATE_API_KEY>", playbook.getVars().get("api_key"));
+    Assertions.assertEquals(3, playbook.getTaskList().size());
+    Assertions.assertEquals("admins", playbook.getTaskList().get(2).getVars().get("to"));
+    Assertions.assertEquals("A new blog post was just published by {{ blogPost.createdBy | name }}.\n" +
         "\n" +
         "Title: {{ blogPost.title }}\n" +
         "Body:\n" +
@@ -47,128 +71,132 @@ public class YamlReaderTest {
 
   @Test
   public void testConditionalRead() {
-    String yaml =
-        "---\n" +
-            "id: conditional\n" +
-            "name: Conditional flow\n" +
-            "vars:\n" +
-            "workflow:\n" +
-            "  - workItem1\n" +
-            "  - set: condition1 = 0\n" +
-            "  - block:\n" +
-            "    - workItem2:\n" +
-            "      repeat: 3\n" +
-            "      when: '{{ condition1 < 0 }}'\n" +
-            "  - block:\n" +
-            "    - workItem3: hello\n" +
-            "      when: '{{ condition1 >= 0}}'\n" +
-            "    - workItem4: test\n" +
-            "  - workItem5: finished";
+    String yaml = """
+        ---
+        id: conditional
+        name: Conditional flow
+        vars:
+        workflow:
+          - workItem1
+          - set: condition1 = 0
+          - block:
+            - workItem2:
+              repeat: 3
+              when: '{{ condition1 < 0 }}'
+          - block:
+            - workItem3: hello
+              when: '{{ condition1 >= 0}}'
+            - workItem4: test
+          - workItem5: finished
+        """;
 
     Playbook playbook = YamlReader.readPlaybook(yaml);
-    Assert.assertNotNull(playbook);
-    Assert.assertEquals("conditional", playbook.getId());
-    Assert.assertEquals("Conditional flow", playbook.getName());
-    Assert.assertEquals(0, playbook.getVars().size());
-    Assert.assertEquals(5, playbook.getTaskList().size());
-    Assert.assertEquals("workItem1", playbook.getTaskList().get(0).getId());
-    Assert.assertEquals("set", playbook.getTaskList().get(1).getId());
-    Assert.assertEquals("block", playbook.getTaskList().get(2).getId());
-    Assert.assertEquals("workItem2", playbook.getTaskList().get(2).getTasks().get(0).getId());
-    Assert.assertEquals("block", playbook.getTaskList().get(3).getId());
-    Assert.assertEquals("workItem3", playbook.getTaskList().get(3).getTasks().get(0).getId());
-    Assert.assertEquals("workItem4", playbook.getTaskList().get(3).getTasks().get(1).getId());
+    Assertions.assertNotNull(playbook);
+    Assertions.assertEquals("conditional", playbook.getId());
+    Assertions.assertEquals("Conditional flow", playbook.getName());
+    Assertions.assertEquals(0, playbook.getVars().size());
+    Assertions.assertEquals(5, playbook.getTaskList().size());
+    Assertions.assertEquals("workItem1", playbook.getTaskList().get(0).getId());
+    Assertions.assertEquals("set", playbook.getTaskList().get(1).getId());
+    Assertions.assertEquals("block", playbook.getTaskList().get(2).getId());
+    Assertions.assertEquals("workItem2", playbook.getTaskList().get(2).getTasks().get(0).getId());
+    Assertions.assertEquals("block", playbook.getTaskList().get(3).getId());
+    Assertions.assertEquals("workItem3", playbook.getTaskList().get(3).getTasks().get(0).getId());
+    Assertions.assertEquals("workItem4", playbook.getTaskList().get(3).getTasks().get(1).getId());
     Task block1 = playbook.getTaskList().get(3);
-    Assert.assertEquals(2, block1.getTaskList().size());
+    Assertions.assertEquals(2, block1.getTaskList().size());
   }
 
   @Test
-  public void testSequentialRead() {
-    String yaml =
-        "id: sequential\n" +
-            "name: Sequential flow\n" +
-            "vars:\n" +
-            "workflow:\n" +
-            "  - workItem1:\n" +
-            "    repeat: 3\n" +
-            "    delay: 10\n" +
-            "  - workItem2\n" +
-            "  - workItem3: something";
+  void testSequentialRead() {
+    String yaml = """
+        id: sequential
+        name: Sequential flow
+        vars:
+        workflow:
+          - workItem1:
+            repeat: 3
+            delay: 10
+          - workItem2
+          - workItem3: something
+        """;
 
     Playbook playbook = YamlReader.readPlaybook(yaml);
-    Assert.assertNotNull(playbook);
-    Assert.assertEquals("sequential", playbook.getId());
-    Assert.assertEquals("Sequential flow", playbook.getName());
-    Assert.assertEquals(0, playbook.getVars().size());
-    Assert.assertEquals(3, playbook.getTaskList().size());
-    Assert.assertEquals("workItem1", playbook.getTaskList().get(0).getId());
-    Assert.assertEquals(3, playbook.getTaskList().get(0).getRepeat());
-    Assert.assertEquals(10, playbook.getTaskList().get(0).getDelay());
-    Assert.assertEquals("workItem2", playbook.getTaskList().get(1).getId());
-    Assert.assertEquals("workItem3", playbook.getTaskList().get(2).getId());
-    Assert.assertEquals("something", playbook.getTaskList().get(2).getData());
+    Assertions.assertNotNull(playbook);
+    Assertions.assertEquals("sequential", playbook.getId());
+    Assertions.assertEquals("Sequential flow", playbook.getName());
+    Assertions.assertEquals(0, playbook.getVars().size());
+    Assertions.assertEquals(3, playbook.getTaskList().size());
+    Assertions.assertEquals("workItem1", playbook.getTaskList().get(0).getId());
+    Assertions.assertEquals(3, playbook.getTaskList().get(0).getRepeat());
+    Assertions.assertEquals(10, playbook.getTaskList().get(0).getDelay());
+    Assertions.assertEquals("workItem2", playbook.getTaskList().get(1).getId());
+    Assertions.assertEquals("workItem3", playbook.getTaskList().get(2).getId());
+    Assertions.assertEquals("something", playbook.getTaskList().get(2).getData());
   }
 
   @Test
-  public void testParallelRead() {
-    String yaml =
-        "id: parallel\n" +
-            "name: Parallel flow\n" +
-            "vars:\n" +
-            "workflow:\n" +
-            "  - task1:\n" +
-            "  - parallel:\n" +
-            "    timeout: 10\n" +
-            "    when: '{{ something == else }}'\n" +
-            "    tasks:\n" +
-            "      - block:\n" +
-            "        - workItem1:\n" +
-            "          when: '{{ websiteHits > 0 }}'\n" +
-            "      - block:\n" +
-            "        - workItem2:\n" +
-            "  - workItem3\n" +
-            "  - workItem4: 'some data'\n";
+  void testParallelRead() {
+    String yaml = """
+        id: parallel
+        name: Parallel flow
+        vars:
+        workflow:
+          - task1:
+          - parallel:
+            timeout: 10
+            when: '{{ something == else }}'
+            tasks:
+              - block:
+                - workItem1:
+                  when: '{{ websiteHits > 0 }}'
+              - block:
+                - workItem2:
+          - workItem3
+          - workItem4: 'some data'
+        """;
 
     Playbook playbook = YamlReader.readPlaybook(yaml);
-    Assert.assertNotNull(playbook);
-    Assert.assertEquals("parallel", playbook.getId());
-    Assert.assertEquals("Parallel flow", playbook.getName());
-    Assert.assertEquals(0, playbook.getVars().size());
-    Assert.assertEquals(4, playbook.getTaskList().size());
-    Assert.assertEquals("parallel", playbook.getTaskList().get(1).getId());
-    Assert.assertEquals(10, playbook.getTaskList().get(1).getTimeout());
-    Assert.assertEquals("workItem3", playbook.getTaskList().get(2).getId());
-    Assert.assertEquals("workItem4", playbook.getTaskList().get(3).getId());
-    Assert.assertNotNull(playbook.getTaskList().get(1).getTaskList());
+    Assertions.assertNotNull(playbook);
+    Assertions.assertEquals("parallel", playbook.getId());
+    Assertions.assertEquals("Parallel flow", playbook.getName());
+    Assertions.assertEquals(0, playbook.getVars().size());
+    Assertions.assertEquals(4, playbook.getTaskList().size());
+    Assertions.assertEquals("parallel", playbook.getTaskList().get(1).getId());
+    Assertions.assertEquals(10, playbook.getTaskList().get(1).getTimeout());
+    Assertions.assertEquals("workItem3", playbook.getTaskList().get(2).getId());
+    Assertions.assertEquals("workItem4", playbook.getTaskList().get(3).getId());
+    Assertions.assertNotNull(playbook.getTaskList().get(1).getTaskList());
     // A noop (parallel has 'when') and 2 blocks
-    Assert.assertEquals(3, playbook.getTaskList().get(1).getTaskList().size());
+    Assertions.assertEquals(3, playbook.getTaskList().get(1).getTaskList().size());
   }
 
   @Test
-  public void testReadMultiplePlaybooks() {
-    String yaml =
-        "# The playbook manager will execute flows for matching id's\n" +
-            "---\n" +
-            "- id: blog-post-published\n" +
-            "  workflow:\n" +
-            "    - history:\n" +
-            "      title: 'A blog post was published: {{ blogPost.title }}'\n" +
-            "      user: '{{ user.id }}'\n" +
-            "- id: web-page-published\n" +
-            "  workflow:\n" +
-            "    - history:\n" +
-            "      title: 'A web page was published: {{ webPage.title }}'\n" +
-            "      user: '{{ user.id }}'\n" +
-            "- id: web-page-updated\n" +
-            "  workflow:\n" +
-            "    - history:\n" +
-            "      title: 'A web page was updated: {{ webPage.title }}'\n" +
-            "      user: '{{ user.id }}'\n";
+  void testReadMultiplePlaybooks() {
+    String yaml = """
+        # The playbook manager will execute flows for matching id's
+        ---
+        - id: blog-post-published
+          workflow:
+            - history:
+              title: 'A blog post was published: {{ blogPost.title }}'
+              user: '{{ user.id }}'
+        - id: web-page-published
+          workflow:
+            - history:
+              title: 'A web page was published: {{ webPage.title }}'
+              user: '{{ user.id }}'
+        - id: web-page-updated
+          workflow:
+            - history:
+              title: 'A web page was updated: {{ webPage.title }}'
+              user: '{{ user.id }}'
+        """;
 
     List<Playbook> playbookList = YamlReader.readPlaybooks(yaml);
-    Assert.assertNotNull(playbookList);
-    Assert.assertEquals(3, playbookList.size());
-    Assert.assertEquals("blog-post-published", playbookList.get(0).getId());
-    Assert.assertEquals("web-page-published", playbookList.get(1).getId());
+    Assertions.assertNotNull(playbookList);
+    Assertions.assertEquals(3, playbookList.size());
+    Assertions.assertEquals("blog-post-published", playbookList.get(0).getId());
+    Assertions.assertEquals("web-page-published", playbookList.get(1).getId());
   }
 }
