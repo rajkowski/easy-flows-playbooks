@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.jeasy.flows.work.EvaluateTask;
 import org.jeasy.flows.work.LogTask;
 import org.jeasy.flows.work.NoOpTask;
@@ -63,6 +64,7 @@ public class PlaybookManager {
 
   private static Map<String, Playbook> playbooks = new HashMap<>();
   private static Map<String, Object> taskInstances = new HashMap<>();
+  private static JexlPermissions jexlPermissions = JexlPermissions.UNRESTRICTED;
 
   public static void register(Map<String, String> taskLibrary) {
     LOGGER.info("Registering classes...");
@@ -241,4 +243,11 @@ public class PlaybookManager {
     return taskContext;
   }
 
+  public static JexlPermissions getJexlPermissions() {
+    return jexlPermissions;
+  }
+
+  public static void setJexlPermissions(JexlPermissions permissions) {
+    jexlPermissions = permissions;
+  }
 }

@@ -30,6 +30,7 @@ import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
+import org.jeasy.flows.playbook.PlaybookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ public class SetTask implements Work {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SetTask.class.getName());
 
-  private static final JexlEngine jexl = new JexlBuilder().create();
+  private static final JexlEngine jexl = new JexlBuilder().permissions(PlaybookManager.getJexlPermissions()).create();
 
   @Override
   public WorkReport execute(WorkContext workContext, TaskContext taskContext) {

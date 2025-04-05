@@ -33,6 +33,7 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
 import org.jeasy.flows.playbook.Playbook;
+import org.jeasy.flows.playbook.PlaybookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +46,7 @@ public class Expression {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Expression.class.getName());
 
-  private static final JexlEngine jexl = new JexlBuilder().create();
+  private static final JexlEngine jexl = new JexlBuilder().permissions(PlaybookManager.getJexlPermissions()).create();
 
   public static void applyVarExpressionsToWorkContext(Playbook playbook, WorkContext workContext,
       Map<String, Object> starterObjectMap) {
