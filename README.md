@@ -1,23 +1,25 @@
 ***
 
 <div align="center">
-    <b><em>Easy Flows - Playbooks Edition</em></b><br>
-    The simple, stupid workflow engine for Java&trade;, with Playbooks
+    <b><em>Workflow</em></b><br>
+    A simple workflow engine for Java&trade;
 </div>
 
 ***
 
-## What is the Playbooks Edition?
+## What is Workflow?
 
 In this version you can define the workflows in YAML similar to Ansible, or from other resources. Playbooks contain the rules and configuration for executing tasks. Supply your YAML, and your own map of task ids and classes. Emphasis is on configuration over code.
 
-These are the changes from Easy Flows:
+Features:
 
 1. The functionality to use YAML to read in workflows has been added
 2. A 'Playbook Manager' assembles and caches workflows, as 'Playbooks' and executes them; once defined you can execute workflows repeatedly by id
 3. 'Task' items are your tasks which perform work; these can be instantiated once by the Playbook Manager, they are considered immutable, and can be re-used during workflows and with other workflows concurrently; Tasks have a unique id for reference
 4. YAML can include expressions evaluated using Jexl
-5. Some additional features as seen in the example workflows...
+5. Workflow runs can be paused (to wait for approval) then resumed
+6. Built on Easy Flows for Java
+7. Some additional features as seen in the example workflows...
 
 An example with parallel tasks within a sequence:
 
@@ -110,7 +112,7 @@ An example which waits for approval before continuing:
       message: 'Not Approved.'
 ```
 
-This workflow engine is modified from Easy Flows and is considered incompatible (and largely untested).
+This workflow engine is modified from Easy Flows and is now incompatible with the original.
 For original information, and very good background details, see [Easy Flows](https://github.com/j-easy/easy-flows)...
 
 These are the previous notes:
@@ -218,44 +220,3 @@ Most of BPMN concepts are not essential to many applications, and building such 
 
 Easy Flows tries to provide a simple alternative with natural APIs that are easy to think about along with basic flows that most small/medium sized
  applications would require. If your business process requires a A0 paper to be drawn down, Easy Flows is probably not the right choice for you.
-
-## Contribution
-
-You are welcome to contribute to the project with pull requests on GitHub.
-
-If you found a bug or want to request a feature, please use the [issue tracker](https://github.com/j-easy/easy-flows/issues).
-
-## Awesome contributors
-
-* [jaredculp](https://github.com/jaredculp)
-* [zhhaojie](https://github.com/zhhaojie)
-
-Thank you for your contributions!
-
-## License
-
-Easy Flows is released under the terms of the MIT license:
-
-```
-The MIT License (MIT)
-
-Copyright (c) 2020 Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-```
