@@ -207,7 +207,6 @@ executorService.shutdown();
 ```
 
 This is not a very useful workflow, but just to give you an idea about how to write workflows with Easy Flows.
-You can find more details about all of this in the [wiki](https://github.com/j-easy/easy-flows/wiki).
 
 ## Why Easy Flows?
 
