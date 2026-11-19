@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- *  Copyright 2021 Matt Rajkowski (https://github.com/rajkowski)
+ *  Copyright 2021-2026 Matt Rajkowski (https://github.com/rajkowski)
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -87,4 +87,5 @@ public class Playbook {
     }
     taskList.add(task);
   }
+
 }

@@ -1,6 +1,7 @@
 /*
  * The MIT License
  *
+ *  Copyright 2026 Matt Rajkowski (https://github.com/rajkowski)
  *  Copyright (c) 2020, Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.jeasy.flows.model.Person;
 import org.jeasy.flows.work.DefaultWorkReport;
 import org.jeasy.flows.work.TaskContext;
 import org.jeasy.flows.work.Work;
@@ -181,6 +183,125 @@ class WorkFlowEngineImplTest {
         WorkReport workReport = workFlowEngine.run(workflow, workContext);
         executorService.shutdown();
         Assertions.assertEquals(WorkStatus.COMPLETED, workReport.getStatus());
+    }
+
+    @Test
+    void workflowCanBePausedAndResumedFromPersistedJson() {
+        WorkFlowEngine engine = aNewWorkFlowEngine().build();
+        WorkContext initialContext = new WorkContext();
+        initialContext.put("approvalRequired", true);
+
+        WorkFlow workflow = new WorkFlow() {
+            @Override
+            public String getName() {
+                return "approval-flow";
+            }
+
+            @Override
+            public WorkReport execute(WorkContext workContext, TaskContext taskContext) {
+                workContext.put("approvalDecision", "pending");
+                return new DefaultWorkReport(WorkStatus.WAITING, workContext);
+            }
+
+            @Override
+            public WorkReport execute(WorkContext workContext) {
+                workContext.put("approvalDecision", "pending");
+                return new DefaultWorkReport(WorkStatus.WAITING, workContext);
+            }
+        };
+
+        WorkReport waitingReport = engine.run(workflow, initialContext);
+        Assertions.assertEquals(WorkStatus.WAITING, waitingReport.getStatus());
+        Assertions.assertTrue(waitingReport.isWaiting());
+        Assertions.assertEquals("pending", waitingReport.getWorkContext().get("approvalDecision"));
+
+        WorkflowExecutionSnapshot snapshot = new WorkflowExecutionSnapshot(waitingReport.getExecutionId(),
+                workflow.getName(),
+                waitingReport.getStatus(), waitingReport.getWorkContext(), workflow);
+        WorkflowExecutionSnapshot downloadedSnapshot = WorkflowExecutionSnapshot.fromJson(snapshot.toJson());
+
+        WorkContext resumedContext = new WorkContext();
+        resumedContext.put("approvalDecision", "approved");
+        WorkReport resumedReport = engine.resume(downloadedSnapshot, resumedContext);
+        Assertions.assertEquals(waitingReport.getExecutionId(), resumedReport.getExecutionId());
+        Assertions.assertEquals(WorkStatus.IN_PROGRESS, resumedReport.getStatus());
+        Assertions.assertEquals("approved", resumedReport.getWorkContext().get("approvalDecision"));
+    }
+
+    @Test
+    void workflowExecutionSnapshotCanBeSerializedToJsonAndDeserialized() {
+        WorkFlow workflow = new WorkFlow() {
+            @Override
+            public String getName() {
+                return "approval-flow";
+            }
+
+            @Override
+            public WorkReport execute(WorkContext workContext, TaskContext taskContext) {
+                workContext.put("approvalDecision", "pending");
+                return new DefaultWorkReport(WorkStatus.WAITING, workContext);
+            }
+
+            @Override
+            public WorkReport execute(WorkContext workContext) {
+                workContext.put("approvalDecision", "pending");
+                return new DefaultWorkReport(WorkStatus.WAITING, workContext);
+            }
+        };
+
+        WorkContext workContext = new WorkContext();
+        workContext.put("approvalRequired", true);
+
+        WorkflowExecutionSnapshot snapshot = new WorkflowExecutionSnapshot("exec-123", "approval-flow",
+                WorkStatus.WAITING, workContext, workflow);
+
+        String json = snapshot.toJson();
+        WorkflowExecutionSnapshot copy = WorkflowExecutionSnapshot.fromJson(json);
+
+        Assertions.assertEquals("exec-123", copy.getExecutionId());
+        Assertions.assertEquals("approval-flow", copy.getWorkflowName());
+        Assertions.assertEquals(WorkStatus.WAITING, copy.getStatus());
+        Assertions.assertEquals(true, copy.getWorkContext().get("approvalRequired"));
+        Assertions.assertNull(copy.getWorkFlow());
+    }
+
+    @Test
+    void workflowExecutionSnapshotCanSerializeNestedPersonAndFriendObjects() {
+        Person person = new Person("Alice", 30);
+        person.setId(7L);
+
+        Person friend = new Person("Bob", 28);
+        friend.setId(42L);
+        person.setFriend(friend);
+
+        WorkContext workContext = new WorkContext();
+        workContext.put("person", person);
+
+        WorkflowExecutionSnapshot snapshot = new WorkflowExecutionSnapshot("exec-person", "person-flow",
+                WorkStatus.WAITING, workContext, null);
+
+        String json = snapshot.toJson();
+        System.out.println(json);
+        WorkflowExecutionSnapshot copy = WorkflowExecutionSnapshot.fromJson(json);
+
+        Assertions.assertEquals("exec-person", copy.getExecutionId());
+        Assertions.assertEquals("person-flow", copy.getWorkflowName());
+        Assertions.assertEquals(WorkStatus.WAITING, copy.getStatus());
+        Assertions.assertNotNull(copy.getWorkContext());
+
+        Person copiedPerson = (Person) copy.getWorkContext().get("person");
+        Assertions.assertNotNull(copiedPerson);
+        Assertions.assertEquals(7L, copiedPerson.getId());
+        Assertions.assertEquals("Alice", copiedPerson.getName());
+        Assertions.assertEquals(30, copiedPerson.getAge());
+        Assertions.assertTrue(copiedPerson.isAdult());
+
+        Assertions.assertNotNull(copiedPerson.getFriend());
+        Assertions.assertEquals(42L, copiedPerson.getFriend().getId());
+        Assertions.assertEquals("Bob", copiedPerson.getFriend().getName());
+        Assertions.assertEquals(28, copiedPerson.getFriend().getAge());
+        Assertions.assertTrue(copiedPerson.getFriend().isAdult());
+        Assertions.assertTrue(json.contains("friend"));
     }
 
     static class PrintMessageWork implements Work {

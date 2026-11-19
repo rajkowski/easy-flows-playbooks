@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- *  Copyright 2021 Matt Rajkowski (https://github.com/rajkowski)
+ *  Copyright 2021-2026 Matt Rajkowski (https://github.com/rajkowski)
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,14 @@ package org.jeasy.flows.playbook;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jeasy.flows.engine.WorkflowExecutionSnapshot;
+import org.jeasy.flows.model.Person;
+import org.jeasy.flows.model.SampleAction;
 import org.jeasy.flows.reader.YamlReader;
 import org.jeasy.flows.work.LogTask;
 import org.jeasy.flows.work.NoOpTask;
 import org.jeasy.flows.work.SetTask;
+import org.jeasy.flows.work.WorkContext;
 import org.jeasy.flows.work.WorkReport;
 import org.jeasy.flows.work.WorkStatus;
 import org.junit.jupiter.api.Assertions;
@@ -185,6 +189,92 @@ class PlaybookManagerTest {
     Assertions.assertEquals("yes", workReport.getWorkContext().get("block1"));
     Assertions.assertNull(workReport.getWorkContext().get("block2"));
     Assertions.assertEquals("yes", workReport.getWorkContext().get("finished"));
+  }
+
+  @Test
+  void testApprovalWorkflowPauseAndSerializeToJson() {
+    String yaml = """
+        id: request-permission
+        workflow:
+          - log:
+              message: 'An email was sent to the approver with this run context'
+          - pause:
+              reason: 'Approval is needed'
+          - block:
+              when: approval == 1
+              - log:
+                  message: 'Approved by {{ approver.name }} for {{ user.name }}'
+              - set: approvedMessage = 'Approved by {{ approver.name }} for {{ user.name }}'
+          - block:
+              when: approval == 0
+              - log:
+                  message: 'Denied by {{ approver.name }} for {{ user.name }}'
+              - set: approvedMessage = 'Denied by {{ approver.name }} for {{ user.name }}'
+          - log:
+              message: 'Done.'
+        """;
+
+    Playbook playbook = YamlReader.readPlaybook(yaml);
+    Assertions.assertEquals("request-permission", playbook.getId());
+    PlaybookManager.add(playbook);
+
+    // Configure the work context objects
+    Person person = new Person();
+    person.setId(101L);
+    person.setName("Alice");
+
+    SampleAction sampleAction = new SampleAction();
+    sampleAction.setName("edit-account");
+
+    Person approver = new Person();
+    approver.setId(202L);
+    approver.setName("Carol");
+
+    WorkContext workContext = new WorkContext();
+    workContext.put("user", person);
+    workContext.put("action", sampleAction);
+    workContext.put("approver", approver);
+    workContext.put("approval", 0);
+
+    WorkReport waitingReport = PlaybookManager.run(playbook.getId(), workContext);
+    Assertions.assertNotNull(waitingReport);
+    Assertions.assertEquals(WorkStatus.WAITING, waitingReport.getStatus());
+    Assertions.assertEquals("Approval is needed", waitingReport.getWorkContext().get("workflow.pause.reason"));
+    Assertions.assertEquals("1", waitingReport.getTaskId());
+
+    // The playbook structure is embedded (serialized) in the snapshot, not the raw YAML, so the exact
+    // paused task element id can be resumed even when a pause task appears more than once
+    WorkflowExecutionSnapshot snapshot = new WorkflowExecutionSnapshot(waitingReport.getExecutionId(), playbook.getId(),
+        waitingReport.getStatus(), waitingReport.getWorkContext(), null, playbook, waitingReport.getTaskId());
+    String json = snapshot.toJson();
+    Assertions.assertTrue(json.contains("workflow.pause.reason"));
+    Assertions.assertTrue(json.contains("request-permission"));
+
+    System.out.println(json);
+
+    WorkflowExecutionSnapshot restoredSnapshot = WorkflowExecutionSnapshot.fromJson(json);
+    Assertions.assertEquals(waitingReport.getExecutionId(), restoredSnapshot.getExecutionId());
+    Assertions.assertEquals(WorkStatus.WAITING, restoredSnapshot.getStatus());
+    Assertions.assertEquals("Approval is needed", restoredSnapshot.getWorkContext().get("workflow.pause.reason"));
+    Assertions.assertEquals("1", restoredSnapshot.getPausedTaskId());
+    Assertions.assertNotNull(restoredSnapshot.getPlaybook());
+    Assertions.assertEquals("request-permission", restoredSnapshot.getPlaybook().getId());
+
+    Person actualApprover = new Person();
+    actualApprover.setId(303L);
+    actualApprover.setName("Neil");
+
+    WorkContext restoredContext = restoredSnapshot.getWorkContext();
+    restoredContext.put("approver", actualApprover);
+    restoredContext.put("approval", 1);
+
+    // Resume the playbook execution with the restored workflow execution snapshot
+    WorkReport resumedReport = PlaybookManager.resume(restoredSnapshot);
+    Assertions.assertNotNull(resumedReport);
+    Assertions.assertEquals(WorkStatus.COMPLETED, resumedReport.getStatus());
+
+    String approvalMessage = String.valueOf(restoredContext.get("approvedMessage"));
+    Assertions.assertEquals("Approved by Neil for Alice", approvalMessage);
   }
 
   @Test

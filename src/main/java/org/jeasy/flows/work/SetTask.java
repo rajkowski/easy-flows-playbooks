@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- *  Copyright 2021 Matt Rajkowski (https://github.com/rajkowski)
+ *  Copyright 2021-2026 Matt Rajkowski (https://github.com/rajkowski)
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -55,17 +55,21 @@ public class SetTask implements Work {
     String property = taskContext.getData().substring(0, idx).trim();
     String value = taskContext.getData().substring(idx + 1).trim();
 
-    // See if the value is an expression
-    boolean isExpression = false;
-    if (value.startsWith("{{") && value.endsWith("}}")) {
-      // Found an expression
+    if ((value.startsWith("'") && value.endsWith("'")) || (value.startsWith("\"") && value.endsWith("\""))) {
+      value = value.substring(1, value.length() - 1);
+    }
+
+    // See if the value contains interpolation or a more complex expression.
+    boolean isExpression = value.contains("{{") && value.contains("}}");
+    if (!isExpression && value.startsWith("{{") && value.endsWith("}}")) {
+      // Found an expression, but leave the value in the template form for the regular evaluation path.
       isExpression = true;
-      value = value.substring(2, value.length() - 2);
-    } else {
+    } else if (!isExpression) {
       int sz = value.length();
       for (int i = 0; i < sz; ++i) {
         if (!Character.isLetterOrDigit(value.charAt(i))) {
           isExpression = true;
+          break;
         }
       }
     }
@@ -76,7 +80,7 @@ public class SetTask implements Work {
       return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
     }
 
-    // Evaluate the expression
+    // Evaluate the expression or interpolation template.
     JexlContext mapContext = new MapContext();
     for (Map.Entry<String, Object> entry : workContext.getEntrySet()) {
       mapContext.set(entry.getKey(), entry.getValue());
@@ -84,8 +88,13 @@ public class SetTask implements Work {
     for (Map.Entry<String, Object> entry : taskContext.getEntrySet()) {
       mapContext.set(entry.getKey(), entry.getValue());
     }
-    JexlScript compiledScript = jexl.createScript(value);
-    Object result = compiledScript.execute(mapContext);
+    Object result;
+    if (value.contains("{{") && value.contains("}}")) {
+      result = Expression.evaluate(mapContext, value);
+    } else {
+      JexlScript compiledScript = jexl.createScript(value);
+      result = compiledScript.execute(mapContext);
+    }
     LOGGER.debug("Setting field: " + property + "=" + result);
     workContext.put(property, result);
 

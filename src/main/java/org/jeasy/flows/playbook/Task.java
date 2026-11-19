@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- *  Copyright 2021 Matt Rajkowski (https://github.com/rajkowski)
+ *  Copyright 2021-2026 Matt Rajkowski (https://github.com/rajkowski)
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -54,6 +54,9 @@ public class Task {
 
   // Tasks which have sub-tasks
   private TaskList taskList = null;
+
+  // Runtime-assigned hierarchical position (e.g. "2.1"), not read from or written to YAML
+  private String elementId = null;
 
   public Task() {
 
@@ -159,6 +162,14 @@ public class Task {
       vars = new LinkedHashMap<>();
     }
     vars.put(name, value);
+  }
+
+  public String getElementId() {
+    return elementId;
+  }
+
+  public void setElementId(String elementId) {
+    this.elementId = elementId;
   }
 
 }

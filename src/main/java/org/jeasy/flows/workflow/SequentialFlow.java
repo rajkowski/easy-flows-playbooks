@@ -1,6 +1,7 @@
 /*
  * The MIT License
  *
+ *  Copyright 2026 Matt Rajkowski (https://github.com/rajkowski)
  *  Copyright (c) 2020, Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,6 +35,7 @@ import org.jeasy.flows.work.TaskContext;
 import org.jeasy.flows.work.Work;
 import org.jeasy.flows.work.WorkContext;
 import org.jeasy.flows.work.WorkReport;
+import org.jeasy.flows.work.WorkStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,6 +97,12 @@ public class SequentialFlow extends AbstractWorkFlow {
                     LOGGER.debug("Executing work: " + taskContext.getWork().getClass().getSimpleName());
                 }
                 workReport = taskContext.getWork().execute(workContext, taskContext);
+                if (workReport != null && (WorkStatus.WAITING.equals(workReport.getStatus())
+                        || WorkStatus.PAUSED.equals(workReport.getStatus()))) {
+                    LOGGER.info("Work unit '{}' is waiting for external input, stopping the workflow execution",
+                            taskContext.getWork().getName());
+                    return workReport;
+                }
                 if (workReport != null && FAILED.equals(workReport.getStatus())
                         && !"block".equals(taskContext.getWork().getName())) {
                     LOGGER.warn("Work unit '{}' has failed, skipping subsequent work units",
