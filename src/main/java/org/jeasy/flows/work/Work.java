@@ -1,6 +1,7 @@
 /*
  * The MIT License
  *
+ *  Copyright 2026 Matt Rajkowski (https://github.com/rajkowski)
  *  Copyright (c) 2020, Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,6 +24,7 @@
  */
 package org.jeasy.flows.work;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
@@ -36,7 +38,7 @@ import java.util.UUID;
  *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
-public interface Work {
+public interface Work extends Serializable {
 
     /**
      * The name of the unit of work.

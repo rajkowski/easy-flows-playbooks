@@ -1,6 +1,7 @@
 /*
  * The MIT License
  *
+ *  Copyright 2026 Matt Rajkowski (https://github.com/rajkowski)
  *  Copyright (c) 2020, Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,12 +32,27 @@ package org.jeasy.flows.work;
 public enum WorkStatus {
 
     /**
+     * The unit of work is currently being executed.
+     */
+    IN_PROGRESS,
+
+    /**
+     * The unit of work has paused and is waiting for external input or approval.
+     */
+    WAITING,
+
+    /**
+     * The unit of work has been paused intentionally and can be resumed later.
+     */
+    PAUSED,
+
+    /**
      * The unit of work has failed.
      */
     FAILED,
 
     /**
-     * The unit of work has completed successfully
+     * The unit of work has completed successfully.
      */
     COMPLETED
 }

@@ -1,6 +1,7 @@
 /*
  * The MIT License
  *
+ *  Copyright 2026 Matt Rajkowski (https://github.com/rajkowski)
  *  Copyright (c) 2020, Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,6 +24,7 @@
  */
 package org.jeasy.flows.work;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,7 +39,9 @@ import org.jeasy.flows.playbook.Playbook;
  *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
-public class WorkContext {
+public class WorkContext implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private final Map<String, Object> context = new ConcurrentHashMap<>();
 

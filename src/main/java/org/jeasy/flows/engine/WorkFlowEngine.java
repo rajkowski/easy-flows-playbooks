@@ -1,6 +1,7 @@
 /*
  * The MIT License
  *
+ *  Copyright 2026 Matt Rajkowski (https://github.com/rajkowski)
  *  Copyright (c) 2020, Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -42,5 +43,14 @@ public interface WorkFlowEngine {
      * @return workflow report
      */
     WorkReport run(WorkFlow workFlow, WorkContext workContext);
+
+    /**
+     * Resume a workflow execution from a previously exported snapshot, without requiring the original in-memory handle.
+     *
+     * @param workflowExecutionSnapshot exported workflow execution snapshot
+     * @param workContext updated context to resume with
+     * @return workflow report for the resumed execution
+     */
+    WorkReport resume(WorkflowExecutionSnapshot workflowExecutionSnapshot, WorkContext workContext);
 
 }

@@ -88,6 +88,28 @@ An example with expressions, an event object is provided to the work context:
     object-id: '{{ user.id }}'
 ```
 
+An example which waits for approval before continuing:
+
+```yaml
+- id: request-permission
+  vars:
+   user: '{{ event.person }}'
+   action: '{{ event.action }}'
+  workflow:
+  - log:
+    message: 'An email was sent to the approver with this run context'
+  - pause:
+    reason: 'Approval is needed'
+  - block:
+    when: approval == 1
+    - log:
+      message: 'Approved!'
+  - block:
+    when: approval == 0
+    - log:
+      message: 'Not Approved.'
+```
+
 This workflow engine is modified from Easy Flows and is considered incompatible (and largely untested).
 For original information, and very good background details, see [Easy Flows](https://github.com/j-easy/easy-flows)...
 

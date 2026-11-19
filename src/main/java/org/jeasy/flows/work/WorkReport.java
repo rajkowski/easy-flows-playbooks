@@ -1,6 +1,7 @@
 /*
  * The MIT License
  *
+ *  Copyright 2026 Matt Rajkowski (https://github.com/rajkowski)
  *  Copyright (c) 2020, Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,10 +33,46 @@ public interface WorkReport {
 
     /**
      * Get work execution status.
-     * 
+     *
      * @return execution status
      */
     WorkStatus getStatus();
+
+    /**
+     * Get the execution identifier assigned to the workflow when it was started.
+     *
+     * @return execution identifier or {@code null} when not tracked
+     */
+    default String getExecutionId() {
+        return null;
+    }
+
+    /**
+     * Check whether the workflow is still running.
+     *
+     * @return {@code true} when the status is {@link WorkStatus#IN_PROGRESS}, {@code false} otherwise
+     */
+    default boolean isInProgress() {
+        return WorkStatus.IN_PROGRESS.equals(getStatus());
+    }
+
+    /**
+     * Check whether the workflow is waiting for external input or approval.
+     *
+     * @return {@code true} when the status is {@link WorkStatus#WAITING}
+     */
+    default boolean isWaiting() {
+        return WorkStatus.WAITING.equals(getStatus());
+    }
+
+    /**
+     * Check whether the workflow is complete.
+     *
+     * @return {@code true} when the status is {@link WorkStatus#COMPLETED}
+     */
+    default boolean isCompleted() {
+        return WorkStatus.COMPLETED.equals(getStatus());
+    }
 
     /**
      * Get error if any. Might be {@code null}, but usually not null when
@@ -47,9 +84,19 @@ public interface WorkReport {
     Throwable getError();
 
     /**
-     * Get the last work context of the flow
+     * Get the last work context of the flow.
+     *
      * @return last work context of the flow
      */
     WorkContext getWorkContext();
+
+    /**
+     * Get the hierarchical element id (e.g. "2.1") of the playbook task that produced this report, when known.
+     *
+     * @return the task's element id, or {@code null} when not tracked
+     */
+    default String getTaskId() {
+        return null;
+    }
 
 }

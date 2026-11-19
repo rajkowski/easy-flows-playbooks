@@ -1,6 +1,7 @@
 /*
  * The MIT License
  *
+ *  Copyright 2026 Matt Rajkowski (https://github.com/rajkowski)
  *  Copyright (c) 2020, Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,6 +33,7 @@ public class DefaultWorkReport implements WorkReport {
 
     private final WorkStatus status;
     private final WorkContext workContext;
+    private final String executionId;
     private Throwable error;
 
     /**
@@ -40,8 +42,7 @@ public class DefaultWorkReport implements WorkReport {
      * @param status of work
      */
     public DefaultWorkReport(WorkStatus status, WorkContext workContext) {
-        this.status = status;
-        this.workContext = workContext;
+        this(status, workContext, null, null);
     }
 
     /**
@@ -51,12 +52,31 @@ public class DefaultWorkReport implements WorkReport {
      * @param error if any
      */
     public DefaultWorkReport(WorkStatus status, WorkContext workContext, Throwable error) {
-        this(status, workContext);
+        this(status, workContext, error, null);
+    }
+
+    /**
+     * Create a new {@link DefaultWorkReport}.
+     *
+     * @param status of work
+     * @param workContext context of the workflow
+     * @param error if any
+     * @param executionId persisted execution identifier
+     */
+    public DefaultWorkReport(WorkStatus status, WorkContext workContext, Throwable error, String executionId) {
+        this.status = status;
+        this.workContext = workContext;
         this.error = error;
+        this.executionId = executionId;
     }
 
     public WorkStatus getStatus() {
         return status;
+    }
+
+    @Override
+    public String getExecutionId() {
+        return executionId;
     }
 
     public Throwable getError() {
@@ -72,6 +92,7 @@ public class DefaultWorkReport implements WorkReport {
     public String toString() {
         return "DefaultWorkReport {" +
                 "status=" + status +
+                ", executionId=" + executionId +
                 ", context=" + workContext +
                 ", error=" + (error == null ? "''" : error) +
                 '}';
