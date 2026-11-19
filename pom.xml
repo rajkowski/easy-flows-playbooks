@@ -7,31 +7,31 @@
     <version>2.0.0</version>
     <name>Workflow</name>
     <description>A simple workflow engine</description>
-    <url>https://github.com/rajkowski/easy-flows-playbooks</url>
+    <url>https://github.com/rajkowski/workflow</url>
     <properties>
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/rajkowski/easy-flows-playbooks/issues</url>
+        <url>https://github.com/rajkowski/workflow/issues</url>
     </issueManagement>
     <ciManagement>
         <system>Github Actions</system>
-        <url>https://github.com/rajkowski/easy-flows-playbooks/actions</url>
+        <url>https://github.com/rajkowski/workflow/actions</url>
     </ciManagement>
     <distributionManagement>
         <repository>
             <id>github</id>
             <name>GitHub Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/rajkowski/easy-flows-playbooks</url>
+            <url>https://maven.pkg.github.com/rajkowski/workflow</url>
         </repository>
     </distributionManagement>
     <developers>
         <developer>
             <id>rajkowski</id>
             <name>Matt Rajkowski</name>
-            <url>https://github.com/rajkowski/easy-flows-playbooks</url>
+            <url>https://github.com/rajkowski/workflow</url>
             <roles>
                 <role>Lead developer</role>
             </roles>
