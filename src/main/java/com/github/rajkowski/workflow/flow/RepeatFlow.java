@@ -40,7 +40,7 @@ import com.github.rajkowski.workflow.work.WorkStatus;
  *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
-public class RepeatFlow extends AbstractWorkFlow {
+public class RepeatFlow extends AbstractFlow {
 
     private final TaskContext work;
     private final WorkReportPredicate predicate;

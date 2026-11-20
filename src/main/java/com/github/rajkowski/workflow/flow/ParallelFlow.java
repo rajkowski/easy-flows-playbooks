@@ -52,7 +52,7 @@ import com.github.rajkowski.workflow.work.WorkReport;
  *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
-public class ParallelFlow extends AbstractWorkFlow {
+public class ParallelFlow extends AbstractFlow {
 
     private final List<TaskContext> workUnits = new ArrayList<>();
     private final ParallelFlowExecutor workExecutor;

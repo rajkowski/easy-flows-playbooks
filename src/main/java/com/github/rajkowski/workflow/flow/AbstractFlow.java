@@ -24,11 +24,14 @@
  */
 package com.github.rajkowski.workflow.flow;
 
-abstract class AbstractWorkFlow implements WorkFlow {
+/**
+ * Abstract base class for all workflow flows.
+ */
+abstract class AbstractFlow implements WorkFlow {
 
     private final String name;
 
-    AbstractWorkFlow(String name) {
+    AbstractFlow(String name) {
         this.name = name;
     }
 

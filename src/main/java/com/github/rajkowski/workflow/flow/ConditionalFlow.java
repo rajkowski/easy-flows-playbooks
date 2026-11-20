@@ -47,7 +47,7 @@ import com.github.rajkowski.workflow.work.WorkReportPredicate;
  *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
-public class ConditionalFlow extends AbstractWorkFlow {
+public class ConditionalFlow extends AbstractFlow {
 
     private final TaskContext initialWorkUnit, nextOnPredicateSuccess, nextOnPredicateFailure;
     private final WorkReportPredicate predicate;

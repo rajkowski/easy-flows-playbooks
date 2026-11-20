@@ -47,7 +47,7 @@ import com.github.rajkowski.workflow.work.WorkStatus;
  *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
-public class SequentialFlow extends AbstractWorkFlow {
+public class SequentialFlow extends AbstractFlow {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SequentialFlow.class.getName());
 
