@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.rajkowski</groupId>
     <artifactId>workflow</artifactId>
-    <version>2.0.0</version>
+    <version>3.0.0</version>
     <name>Workflow</name>
     <description>A simple workflow engine</description>
     <url>https://github.com/rajkowski/workflow</url>

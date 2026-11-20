@@ -7,27 +7,29 @@ This repository is a Java workflow engine focused on YAML-defined playbooks. The
 1. Parse YAML into a `Playbook` via `YamlReader`
 2. Register built-in or custom task classes with `PlaybookManager.register(...)`
 3. Execute the playbook through `PlaybookManager.run(...)`
-4. Tasks are executed as `Work` implementations under the `org.jeasy.flows.work` package
+4. Tasks are executed as `Work` implementations under the `com.github.rajkowski.workflow.work` package
 
 Primary entry points:
 - [README.md](README.md)
 - [pom.xml](pom.xml)
-- [src/main/java/org/jeasy/flows/playbook/PlaybookManager.java](src/main/java/org/jeasy/flows/playbook/PlaybookManager.java)
-- [src/main/java/org/jeasy/flows/reader/YamlReader.java](src/main/java/org/jeasy/flows/reader/YamlReader.java)
+- [src/main/java/com/github/rajkowski/workflow/playbook/PlaybookManager.java](src/main/java/com/github/rajkowski/workflow/playbook/PlaybookManager.java)
+- [src/main/java/com/github/rajkowski/workflow/reader/YamlReader.java](src/main/java/com/github/rajkowski/workflow/reader/YamlReader.java)
 
 ## Build and test workflow
 
 Use Maven from the repository root:
 
 - `mvn test` — run the full test suite
-- `mvn -Dtest=org.jeasy.flows.playbook.PlaybookManagerTest test` — run a focused test class
+- `mvn -Dtest=com.github.rajkowski.workflow.playbook.PlaybookManagerTest test` — run a focused test class
 - `mvn -q test` — quiet local validation when iterating quickly
 
-This project targets Java 17 and uses JUnit 5 for tests.
+This project targets Java 21 and uses JUnit 5 for tests.
 
 ## Repository conventions
 
-- Keep task implementations under `src/main/java/org/jeasy/flows/work` and prefer the `Work` interface contract.
+- Keep task implementations under `src/main/java/com/github/rajkowski/workflow/work` and prefer the `Work` interface contract.
+- Keep Java packages rooted at `com.github.rajkowski.workflow`; place flow implementations under the `flow` package and playbook-specific code under `playbook`.
+- Preserve existing MIT and copyright headers. Project-owned files use `Copyright 2021-2026 Matt Rajkowski`; new files use `Copyright 2026 Matt Rajkowski`. Retain `Mahmoud Ben Hassine` attribution on code derived from the original framework.
 - Favor YAML-driven behavior and playbook-level orchestration over code-only workflow setup.
 - When adding a task, also register it in `PlaybookManager.register(...)` if it is intended to be usable by ID in playbooks.
 - Tests are the main guardrail for parsing and execution behavior; add or update tests alongside functional changes.
@@ -44,10 +46,10 @@ This project targets Java 17 and uses JUnit 5 for tests.
 
 - Prefer minimal, targeted edits that stay aligned with the playbook model and YAML parser.
 - Reproduce/extend behavior with a failing test before fixing parser or execution logic.
-- Check the relevant task and playbook tests in `src/test/java/org/jeasy/flows` before broad refactors.
+- Check the relevant task and playbook tests in `src/test/java/com/github/rajkowski/workflow` before broad refactors.
 
 ## Helpful files
 
-- [src/test/java/org/jeasy/flows/playbook/PlaybookManagerTest.java](src/test/java/org/jeasy/flows/playbook/PlaybookManagerTest.java)
-- [src/test/java/org/jeasy/flows/reader/YamlReaderTest.java](src/test/java/org/jeasy/flows/reader/YamlReaderTest.java)
-- [src/main/java/org/jeasy/flows/work](src/main/java/org/jeasy/flows/work)
+- [src/test/java/com/github/rajkowski/workflow/playbook/PlaybookManagerTest.java](src/test/java/com/github/rajkowski/workflow/playbook/PlaybookManagerTest.java)
+- [src/test/java/com/github/rajkowski/workflow/reader/YamlReaderTest.java](src/test/java/com/github/rajkowski/workflow/reader/YamlReaderTest.java)
+- [src/main/java/com/github/rajkowski/workflow/work](src/main/java/com/github/rajkowski/workflow/work)
